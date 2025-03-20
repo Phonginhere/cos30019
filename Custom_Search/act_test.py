@@ -18,5 +18,13 @@ G = nx.DiGraph()
 for (start, end), weight in edges.items():
     G.add_edge(start, end, cost=weight)
 
-print("Nodes:", G.nodes())
-print("EdGes:", G.edges())
+aco = ACO(G, ant_max_steps=200, num_iterations=2000, ant_random_spawn=True)
+
+aco_path, aco_cost = aco.find_shortest_path(
+    source=origin,
+    destination=destinations[0],
+    num_ants=100
+)
+
+print("ACO Path:", aco_path)
+print("ACO Cost:", aco_cost)
