@@ -3,12 +3,12 @@ from aco_routing import ACO
 import re
 import sys
 
-sys.path.append("../data_reader")
+sys.path.append("data_reader")
 
 from parser import parse_graph_file
  
 # Example usage
-file_path = "../Data/PathFinder-test.txt"  # Replace with your actual file name
+file_path = "Data/PathFinder-test.txt"  # Replace with your actual file name
 nodes, edges, origin, destinations = parse_graph_file(file_path)
 
 
