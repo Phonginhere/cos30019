@@ -1,19 +1,22 @@
 import networkx as nx
 from aco_routing import ACO
+import re
+import sys
+
+sys.path.append("../data_reader")
+
+from parser import parse_graph_file
+
+# Example usage
+file_path = "../Data/PathFinder-test.txt"  # Replace with your actual file name
+nodes, edges, origin, destinations = parse_graph_file(file_path)
+
 
 G = nx.DiGraph()
 
-G.add_edge("A", "B", cost=2)
-G.add_edge("B", "C", cost=2)
-G.add_edge("A", "H", cost=2)
-G.add_edge("H", "G", cost=2)
-G.add_edge("C", "F", cost=1)
-G.add_edge("F", "G", cost=1)
-G.add_edge("G", "F", cost=1)
-G.add_edge("F", "C", cost=1)
-G.add_edge("C", "D", cost=10)
-G.add_edge("E", "D", cost=2)
-G.add_edge("G", "E", cost=2)
+# Add all edges from the edges dictionary to the graph
+for (start, end), weight in edges.items():
+    G.add_edge(start, end, cost=weight)
 
-source = "A"
-destination = "D"
+print("Nodes:", G.nodes())
+print("EdGes:", G.edges())
