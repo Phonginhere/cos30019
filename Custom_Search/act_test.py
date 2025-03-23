@@ -18,19 +18,23 @@ G = nx.DiGraph()
 for (start, end), weight in edges.items():
     G.add_edge(start, end, cost=weight)
 
-aco = ACO(G, ant_max_steps=100, num_iterations=100, evaporation_rate=0.1, alpha=0.7, beta=0.3)
+aco = ACO(G, ant_max_steps=500, num_iterations=1000, evaporation_rate=0.2, alpha=1, beta=2, ant_random_spawn=False)
 
 aco_path, aco_cost = aco.find_shortest_path(
     source=origin,
-    destination=destinations[0],
-    num_ants=300,
+    destination=destinations[1],
+    num_ants=500,
 )
+
 print("Origin:", origin)
-print("Destination:", destinations[0])
+print("Destination:", destinations[1])
 print("ACO Path:", aco_path)
 print("ACO Cost:", aco_cost)
 
 # Visualize the graph with the shortest path
-# aco.graph_api.visualize_graph(
-#     shortest_path=aco_path
-# )
+aco.graph_api.visualize_graph(shortest_path=aco_path)
+
+# aco.graph_api.visualize_original_graph()
+
+# print("Nodes:", nodes)
+# print("Edges:", edges)
