@@ -1,27 +1,52 @@
-# cos30019
-Intro to AI with team
+# COS30019: Introduction to Artificial Intelligence
 
-### Uninformed Search: 
-1. BFS - Phong
-2. DFS - Pink
+This repository contains the implementation of various search algorithms for path finding problems, created collaboratively by our team.
 
-### Informed Search
-1. Greedy best-first - Tuan
-2. A "Star" - Tuan
+## Search Algorithms
 
-### Custom Search
-1. ACO - Pink
-2. Uniform Search - Phong
+### Uninformed Search Algorithms
+1. **BFS (Breadth-First Search)** - Implemented by Phong
+2. **DFS (Depth-First Search)** - Implemented by Pink
 
-### How to use data_reader
-import sys
+### Informed Search Algorithms
+1. **GBFS (Greedy Best-First Search)** - Implemented by Tuan
+2. **AS (A* Search)** - Implemented by Tuan
 
-sys.path.append("../data_reader")
+### Custom Search Algorithms
+1. **CUS1 (Uniform Cost Search)** - Implemented by Phong
+2. **CUS2 (Ant Colony Optimization)** - Implemented by Pink
 
-from parser import parse_graph_file
+## Usage
 
-# Example usage
-file_path = "../Data/PathFinder-test.txt"  # Replace with your actual file name
-nodes, edges, origin, destinations = parse_graph_file(file_path)
+### Running the Search Algorithms
 
-This will return nodes and edges as dictionary, origin as integer and destinations as list of integer
+You can run any of the search algorithms from the command line using:
+
+```bash
+python search.py <algorithm> [optional arguments]
+```
+
+Where `<algorithm>` is one of:
+- `BFS` - Breadth-First Search
+- `DFS` - Depth-First Search
+- `GBFS` - Greedy Best-First Search
+- `AS` - A* Search
+- `CUS1` - Uniform Cost Search
+- `CUS2` - Ant Colony Optimization
+
+### Example:
+
+```bash
+python search.py CUS2
+```
+
+### Requirements
+- Python 3.6+ 
+- NetworkX
+- Matplotlib
+- ACO-Routing package (for CUS2)
+
+### Installation:
+```bash
+pip install networkx matplotlib aco-routing
+```

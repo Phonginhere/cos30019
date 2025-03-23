@@ -102,7 +102,7 @@ class ACO:
             ant.take_step()
         return ant
 
-    def find_shortest_path(
+    def find_path_with_single_destination(
         self,
         source: str,
         destination: str,
@@ -126,3 +126,60 @@ class ACO:
         )
         solution_ant = self._deploy_solution_ant(source, destination)
         return solution_ant.path, solution_ant.path_cost
+
+    def find_path_with_multiple_destinations(self, source: str, destinations: List[str], num_ants: int = 100) -> Tuple[List[str], float]:
+        """Find the shortest path that visits all destinations in a greedy manner.
+        
+        Args:
+            source: The starting node
+            destinations: List of destination nodes to visit
+            num_ants: The number of ants to use for each path finding
+        
+        Returns:
+            Tuple[List[str], float]: A tuple containing the path and its cost
+        """
+        # Initialize the combined path with the source node
+        combined_path = [source]
+        total_cost = 0.0
+        
+        # Start from the source
+        current_source = source
+        remaining_destinations = destinations.copy()
+        
+        # Continue until all destinations are visited
+        while remaining_destinations:
+            # Find paths to each destination from current_source
+            best_path = None
+            best_cost = float('inf')
+            best_dest = None
+            
+            for dest in remaining_destinations:
+                try:
+                    path, cost = self.find_path_with_single_destination(
+                        source=current_source,
+                        destination=dest,
+                        num_ants=num_ants
+                    )
+                    
+                    if cost < best_cost:
+                        best_cost = cost
+                        best_path = path
+                        best_dest = dest
+                except Exception as e:
+                    # Log the exception but continue with other destinations
+                    print(f"Warning: Could not find path from {current_source} to {dest}: {e}")
+                    continue
+            
+            # If no path was found to any remaining destination, stop
+            if best_path is None:
+                raise ValueError(f"Could not find a path to any of the remaining destinations: {remaining_destinations}")
+            
+            # Add the path (excluding the first node which is already in the combined path)
+            combined_path.extend(best_path[1:])
+            total_cost += best_cost
+            
+            # Update current_source and remove the destination we just reached
+            current_source = best_dest
+            remaining_destinations.remove(best_dest)
+        
+        return combined_path, total_cost
