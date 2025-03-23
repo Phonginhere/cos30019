@@ -1,5 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Set, Union
+import os
+import sys
+
+# Import paths setup
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
 
 from aco_routing import utils
 from aco_routing.graph_api import GraphApi
@@ -24,6 +31,37 @@ class Ant:
     is_fit: bool = False
     # Indicates if the ant is the pheromone-greedy solution ant
     is_solution_ant: bool = False
+
+    @classmethod
+    def from_path(cls, graph_api, path, path_cost, is_solution_ant=False):
+        """Create an ant with a predefined path
+        
+        Args:
+            graph_api: The graph API instance
+            path: The path for the ant
+            path_cost: The cost of the path
+            is_solution_ant: Whether this is a solution ant
+            
+        Returns:
+            Ant: A new ant with the given path
+        """
+        ant = cls(
+            graph_api=graph_api,
+            source=path[0],
+            destination=path[-1],
+            is_solution_ant=is_solution_ant,
+        )
+        
+        # Set the path and other properties
+        ant.path = path.copy()
+        ant.current_node = path[-1]
+        ant.path_cost = path_cost
+        ant.is_fit = True
+        
+        # Mark all nodes in the path as visited
+        ant.visited_nodes = set(path)
+        
+        return ant
 
     def __post_init__(self) -> None:
         # Set the spawn node as the current and first node
@@ -68,6 +106,10 @@ class Ant:
                 self.current_node, neighbor
             )
             edge_cost = self.graph_api.get_edge_cost(self.current_node, neighbor)
+            # Avoid division by zero
+            if edge_cost == 0:
+                edge_cost = 0.001  # Small value instead of zero
+                
             total += utils.compute_edge_desirability(
                 edge_pheromones, edge_cost, self.alpha, self.beta
             )
@@ -90,12 +132,22 @@ class Ant:
         all_edges_desirability = self._compute_all_edges_desirability(
             unvisited_neighbors
         )
+        
+        # Guard against division by zero
+        if all_edges_desirability == 0:
+            # Equal probability for all neighbors
+            equal_prob = 1.0 / len(unvisited_neighbors) if unvisited_neighbors else 0
+            return {neighbor: equal_prob for neighbor in unvisited_neighbors}
 
         for neighbor in unvisited_neighbors:
             edge_pheromones = self.graph_api.get_edge_pheromones(
                 self.current_node, neighbor
             )
             edge_cost = self.graph_api.get_edge_cost(self.current_node, neighbor)
+
+            # Avoid division by zero
+            if edge_cost == 0:
+                edge_cost = 0.001  # Small value instead of zero
 
             current_edge_desirability = utils.compute_edge_desirability(
                 edge_pheromones, edge_cost, self.alpha, self.beta
@@ -112,26 +164,44 @@ class Ant:
         """
         unvisited_neighbors = self._get_unvisited_neighbors()
 
-        if self.is_solution_ant:
-            if len(unvisited_neighbors) == 0:
-                raise Exception(
-                    f"No path found from {self.source} to {self.destination}"
-                )
-
-            # The final/solution ant greedily chooses the next node with the highest pheromone value
-            return max(
-                unvisited_neighbors,
-                key=lambda neighbor: self.graph_api.get_edge_pheromones(
-                    self.current_node, neighbor
-                ),
-            )
-
         # Check if ant has no possible nodes to move to
         if len(unvisited_neighbors) == 0:
+            # If we reached the destination, it's OK to have no more moves
+            if self.current_node == self.destination:
+                self.is_fit = True
+                return None
+                
+            # If the solution ant has no moves and isn't at the destination, we need to backtrack
+            if self.is_solution_ant:
+                # If we've visited all nodes and can't reach destination, that's a problem
+                if len(self.visited_nodes) >= self.graph_api.graph.number_of_nodes():
+                    raise Exception(f"No path found from {self.source} to {self.destination}")
+                    
+                # For the solution ant, try to minimize visited node constraints
+                # This allows backtracking to find a path
+                if len(self.path) > 1:
+                    # Try to go back one step
+                    previous = self.path[-2]
+                    return previous
+            
             return None
 
-        probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
+        if self.is_solution_ant:
+            # The final/solution ant greedily chooses the next node with the highest pheromone value
+            best_node = None
+            best_pheromone = -1
+            
+            for neighbor in unvisited_neighbors:
+                pheromone = self.graph_api.get_edge_pheromones(self.current_node, neighbor)
+                if pheromone > best_pheromone:
+                    best_pheromone = pheromone
+                    best_node = neighbor
+                    
+            return best_node
 
+        # For regular ants, use probabilistic selection
+        probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
+        
         # Pick the next node based on the roulette wheel selection technique
         return utils.roulette_wheel_selection(probabilities)
 
@@ -143,18 +213,39 @@ class Ant:
         # Pick the next node of the ant
         next_node = self._choose_next_node()
 
-        # Check if ant is stuck at current node
+        # Check if ant is stuck at current node or has reached destination
         if not next_node:
-            # TODO: optimization: set ant as unfit
+            if self.current_node == self.destination:
+                self.is_fit = True
             return
 
+        # If backtracking (solution ant only)
+        if next_node in self.path:
+            # Remove all nodes after the backtrack point
+            idx = self.path.index(next_node)
+            # Remove path cost for edges we're removing
+            for i in range(len(self.path) - 2, idx - 1, -1):
+                u, v = self.path[i], self.path[i + 1]
+                self.path_cost -= self.graph_api.get_edge_cost(u, v)
+            # Truncate path
+            self.path = self.path[:idx + 1]
+            self.current_node = next_node
+            # Remove these nodes from visited set to allow revisiting
+            for node in self.visited_nodes.copy():
+                if node not in self.path:
+                    self.visited_nodes.remove(node)
+            return
+
+        # Standard case: add the new node to the path
         self.path.append(next_node)
         self.path_cost += self.graph_api.get_edge_cost(self.current_node, next_node)
         self.current_node = next_node
 
     def deposit_pheromones_on_path(self) -> None:
         """Updates the pheromones along all the edges in the path"""
+        # Avoid division by zero
+        deposit_amount = 1.0 / max(self.path_cost, 0.1)
+        
         for i in range(len(self.path) - 1):
             u, v = self.path[i], self.path[i + 1]
-            new_pheromone_value = 1 / self.path_cost
-            self.graph_api.deposit_pheromones(u, v, new_pheromone_value)
+            self.graph_api.deposit_pheromones(u, v, deposit_amount)

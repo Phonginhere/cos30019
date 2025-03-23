@@ -1,15 +1,22 @@
 from dataclasses import dataclass, field
 import random
 from typing import List, Tuple
-import networkx as nx
+import os
+import sys
+
+# Import paths setup
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
 
 from aco_routing.ant import Ant
 from aco_routing.graph_api import GraphApi
+from aco_routing.network import Network
 
 
 @dataclass
 class ACO:
-    graph: nx.DiGraph
+    graph: Network
     # Maximum number of steps an ant is allowed is to take in order to reach the destination
     ant_max_steps: int
     # Number of cycles/waves of search ants to be deployed
@@ -24,13 +31,17 @@ class ACO:
     beta: float = 0.3
     # Search ants
     search_ants: List[Ant] = field(default_factory=list)
+    # Best path found so far
+    best_path: List[str] = field(default_factory=list)
+    # Cost of the best path
+    best_cost: float = float('inf')
 
     def __post_init__(self):
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
         # Initialize all edges of the graph with a pheromone value of 1.0
-        for edge in self.graph.edges:
-            self.graph_api.set_edge_pheromones(edge[0], edge[1], 1.0)
+        for u, v in self.graph.get_edges():
+            self.graph_api.set_edge_pheromones(u, v, 1.0)
 
     def _deploy_forward_search_ants(self) -> None:
         """Deploy forward search ants in the graph"""
@@ -45,7 +56,13 @@ class ACO:
         """Deploy fit search ants back towards their source node while dropping pheromones on the path"""
         for ant in self.search_ants:
             if ant.is_fit:
+                # Add extra deposit for shorter paths
                 ant.deposit_pheromones_on_path()
+                
+                # Update best path if this one is better
+                if ant.path_cost < self.best_cost:
+                    self.best_path = ant.path.copy()
+                    self.best_cost = ant.path_cost
 
     def _deploy_search_ants(
         self,
@@ -60,16 +77,18 @@ class ACO:
             destination (str): The destination node in the graph
             num_ants (int): The number of ants to be spawned
         """
-        for _ in range(self.num_iterations):
+        # Reset best path tracking
+        self.best_path = []
+        self.best_cost = float('inf')
+        
+        for iteration in range(self.num_iterations):
             self.search_ants.clear()
 
             for _ in range(num_ants):
-                spawn_point = (
-                    random.choice(self.graph_api.get_all_nodes())
-                    if self.ant_random_spawn
-                    else source
-                )
-
+                spawn_point = source
+                if self.ant_random_spawn:
+                    spawn_point = random.choice(list(self.graph.nodes()))
+                
                 ant = Ant(
                     self.graph_api,
                     spawn_point,
@@ -81,6 +100,10 @@ class ACO:
 
             self._deploy_forward_search_ants()
             self._deploy_backward_search_ants()
+            
+            # Gradually increase beta to favor shorter paths in later iterations
+            if iteration > self.num_iterations / 2:
+                self.beta = min(self.beta * 1.05, 5.0)
 
     def _deploy_solution_ant(self, source: str, destination: str) -> Ant:
         """Deploy the pheromone-greedy solution to find the shortest path
@@ -92,14 +115,34 @@ class ACO:
         Returns:
             Ant: The solution ant with the computed shortest path and cost
         """
+        # If we already found a good path with the search ants, use it
+        if self.best_path and self.best_path[0] == source and self.best_path[-1] == destination:
+            return Ant.from_path(self.graph_api, self.best_path, self.best_cost, is_solution_ant=True)
+        
+        # Otherwise, create a new solution ant
         ant = Ant(
             self.graph_api,
             source,
             destination,
             is_solution_ant=True,
+            # Use higher beta for solution ant to favor shorter paths
+            beta=max(self.beta * 2, 3.0)
         )
-        while not ant.reached_destination():
+        
+        steps = 0
+        solution_max_steps = self.ant_max_steps * 2  # Give solution ant more steps
+        
+        while not ant.reached_destination() and steps < solution_max_steps:
             ant.take_step()
+            steps += 1
+            
+        if not ant.reached_destination():
+            # If solution ant failed but we have a best path, use that instead
+            if self.best_path and self.best_path[0] == source and self.best_path[-1] == destination:
+                return Ant.from_path(self.graph_api, self.best_path, self.best_cost, is_solution_ant=True)
+            
+            raise Exception(f"Solution ant could not reach destination after {steps} steps.")
+            
         return ant
 
     def find_path_with_single_destination(
@@ -119,6 +162,13 @@ class ACO:
             List[str]: The shortest path found by the ants
             float: The cost of the computed shortest path
         """
+        # Verify the graph has the required nodes
+        if source not in self.graph.nodes():
+            raise ValueError(f"Source node {source} not in graph")
+        if destination not in self.graph.nodes():
+            raise ValueError(f"Destination node {destination} not in graph")
+        
+        # Do the actual search
         self._deploy_search_ants(
             source,
             destination,
@@ -165,14 +215,13 @@ class ACO:
                         best_cost = cost
                         best_path = path
                         best_dest = dest
-                except Exception as e:
-                    # Log the exception but continue with other destinations
-                    print(f"Warning: Could not find path from {current_source} to {dest}: {e}")
+                except Exception:
+                    # Continue with other destinations silently
                     continue
             
             # If no path was found to any remaining destination, stop
             if best_path is None:
-                raise ValueError(f"Could not find a path to any of the remaining destinations: {remaining_destinations}")
+                raise ValueError("Could not find a path to any of the remaining destinations.")
             
             # Add the path (excluding the first node which is already in the combined path)
             combined_path.extend(best_path[1:])

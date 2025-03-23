@@ -1,83 +1,204 @@
 from dataclasses import dataclass
-from typing import List
-import networkx as nx
+from typing import List, Dict
 import matplotlib.pyplot as plt
+import os
+import sys
+
+# Add the parent directory to the system path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+
+from aco_routing.network import Network
 
 
 @dataclass
 class GraphApi:
-    graph: nx.DiGraph
+    graph: Network
     evaporation_rate: float
 
     def set_edge_pheromones(self, u: str, v: str, pheromone_value: float) -> None:
-        self.graph[u][v]["pheromones"] = pheromone_value
+        if (u, v) in self.graph.edges:
+            self.graph.edges[(u, v)]["pheromones"] = pheromone_value
 
     def get_edge_pheromones(self, u: str, v: str) -> float:
-        return self.graph[u][v]["pheromones"]
+        return self.graph.edges.get((u, v), {}).get("pheromones", 0.0)
 
     def deposit_pheromones(self, u: str, v: str, pheromone_amount: float) -> None:
-        self.graph[u][v]["pheromones"] += max(
-            (1 - self.evaporation_rate) + pheromone_amount, 1e-13
-        )
+        if (u, v) in self.graph.edges:
+            pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
+            new_pheromone = (1 - self.evaporation_rate) * pheromones + pheromone_amount
+            self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
+            # Debugging large changes in pheromones
+            if pheromone_amount > 1.0:
+                print(f"Large pheromone deposit on edge {u}->{v}: +{pheromone_amount}")
 
     def get_edge_cost(self, u: str, v: str) -> float:
-        return self.graph[u][v]["cost"]
+        return self.graph.edges.get((u, v), {}).get("cost", float('inf'))
 
     def get_all_nodes(self) -> List[str]:
-        return list(self.graph.nodes)
+        return list(self.graph.nodes())
 
     def get_neighbors(self, node: str) -> List[str]:
         return list(self.graph.neighbors(node))
+    
+    def get_pheromone_levels(self) -> Dict:
+        """Get all pheromone levels in the graph for debugging"""
+        result = {}
+        for (u, v) in self.graph.get_edges():
+            result[(u, v)] = self.get_edge_pheromones(u, v)
+        return result
 
-    def visualize_graph(self, shortest_path: List[str]) -> None:
-        for edge in self.graph.edges:
-            source, destination = edge[0], edge[1]
-            self.graph[source][destination]["pheromones"] = round(
-                self.graph[source][destination]["pheromones"]
-            )
-
-        pos = nx.spring_layout(self.graph, seed=2)
-        nx.draw(self.graph, pos, width=4)
-
-        nx.draw_networkx_nodes(self.graph, pos, node_size=700)
-
-        # nx.draw_networkx_edges(G, pos, width=2)
-        nx.draw_networkx_edges(
-            self.graph,
-            pos,
-            edgelist=list(zip(shortest_path, shortest_path[1:])),
-            edge_color="r",
-            width=4,
-        )
-
-        # node labels
-        nx.draw_networkx_labels(self.graph, pos, font_size=20)
-        # edge cost labels
-        edge_labels = nx.get_edge_attributes(self.graph, "pheromones")
-        nx.draw_networkx_edge_labels(self.graph, pos, edge_labels)
-
-        ax = plt.gca()
-        ax.margins(0.08)
-        plt.axis("off")
-        plt.tight_layout()
-        plt.show()
+    def visualize_graph(self, shortest_path: List[str], shortest_path_cost=None) -> None:
+        """Visualize the graph with the shortest path highlighted
+        
+        Args:
+            shortest_path: List of nodes representing the path to highlight
+            shortest_path_cost: The cost of the shortest path (optional)
+        """
+        try:
+            import matplotlib.pyplot as plt
+            
+            # Ensure all nodes in the path are strings
+            shortest_path = [str(node) for node in shortest_path]
+            
+            # Create a figure with a specific size
+            plt.figure(figsize=(12, 10))
+            
+            # Create positions for nodes (simple grid layout)
+            pos = self.graph.spring_layout()
+            
+            # Convert all position keys to strings for consistency
+            pos = {str(k): v for k, v in pos.items()}
+            
+            # Create a set of path edges for easy lookup
+            path_edges = set()
+            for i in range(len(shortest_path) - 1):
+                path_edges.add((shortest_path[i], shortest_path[i + 1]))
+            
+            # Draw ALL nodes in the graph
+            path_nodes = set(shortest_path)
+            all_nodes = list(self.graph.nodes())
+            
+            # Draw non-path nodes first (in the background)
+            non_path_nodes = [node for node in all_nodes if str(node) not in path_nodes]
+            non_path_xs = [pos[str(node)][0] for node in non_path_nodes if str(node) in pos]
+            non_path_ys = [pos[str(node)][1] for node in non_path_nodes if str(node) in pos]
+            plt.scatter(non_path_xs, non_path_ys, s=700, c='skyblue', edgecolors='black', zorder=1)
+            
+            # Draw path nodes on top (highlighted)
+            path_xs = [pos[node][0] for node in path_nodes if node in pos]
+            path_ys = [pos[node][1] for node in path_nodes if node in pos]
+            plt.scatter(path_xs, path_ys, s=900, c='lightcoral', edgecolors='black', zorder=2)
+            
+            # Draw only the edges that are in the path
+            for i in range(len(shortest_path) - 1):
+                u, v = shortest_path[i], shortest_path[i + 1]
+                
+                # Skip if either node position is missing
+                if u not in pos or v not in pos:
+                    continue
+                    
+                x1, y1 = pos[u]
+                x2, y2 = pos[v]
+                
+                # Draw path edge
+                plt.plot([x1, x2], [y1, y2], color='red', linewidth=3, zorder=3)
+                
+                # Add arrow to show direction
+                dx = x2 - x1
+                dy = y2 - y1
+                plt.arrow(
+                    x1 + 0.8*dx, y1 + 0.8*dy, 
+                    0.1*dx, 0.1*dy, 
+                    head_width=0.05, 
+                    head_length=0.1, 
+                    fc='red', ec='red',
+                    zorder=4
+                )
+                
+                # Add edge label with ONLY cost (no pheromones)
+                midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
+                
+                # Try both string and original forms of edge for lookup
+                edge_data = None
+                edge_pairs = [
+                    (u, v),
+                    (int(u) if u.isdigit() else u, int(v) if v.isdigit() else v),
+                    (str(u), str(v))
+                ]
+                
+                for edge_pair in edge_pairs:
+                    if edge_pair in self.graph.edges:
+                        edge_data = self.graph.edges[edge_pair]
+                        break
+                
+                if edge_data:
+                    cost = edge_data.get("cost", 0)
+                    label = f"cost: {cost}"
+                    plt.text(midx, midy, label, fontsize=12, fontweight='bold',
+                            bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
+                            zorder=5)
+            
+            # Add node labels for ALL nodes
+            for node in all_nodes:
+                str_node = str(node)
+                if str_node not in pos:
+                    continue
+                    
+                x, y = pos[str_node]
+                # Highlight path node labels
+                if str_node in path_nodes:
+                    plt.text(x, y, str_node, fontsize=14, fontweight='bold', ha='center', va='center', zorder=6)
+                else:
+                    plt.text(x, y, str_node, fontsize=12, fontweight='normal', ha='center', va='center', zorder=6)
+            
+            # Add grid
+            plt.grid(True, linestyle='--', alpha=0.7)
+            
+            # Add title
+            path_str = " → ".join(shortest_path)
+            cost_str = f", Cost: {shortest_path_cost}" if shortest_path_cost is not None else ""
+            plt.title(f"Shortest Path: {path_str}{cost_str}", fontsize=14)
+            
+            # Add a legend
+            from matplotlib.lines import Line2D
+            legend_elements = [
+                Line2D([0], [0], color='red', lw=3, label='Path'),
+                Line2D([0], [0], marker='o', color='w', markerfacecolor='lightcoral', 
+                    markersize=15, label='Path node'),
+                Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', 
+                    markersize=15, label='Regular node'),
+            ]
+            plt.legend(handles=legend_elements, loc='upper right')
+            
+            # Adjust layout
+            plt.tight_layout()
+            
+            # Show the plot
+            plt.show()
+        
+        except Exception as e:
+            import traceback
+            print(f"Detailed visualization error: {e}")
+            traceback.print_exc()
         
     def visualize_original_graph(self) -> None:
         # Create a figure with a specific size
         plt.figure(figsize=(12, 10))
         
-        # Create a grid layout that positions nodes on x,y coordinates
-        pos = nx.spring_layout(self.graph, seed=2)
+        # Create positions for nodes (simple grid layout)
+        pos = self.graph.spring_layout()
         
-        # Draw the graph nodes
-        nx.draw_networkx_nodes(self.graph, pos, node_size=700, node_color='skyblue', edgecolors='black')
+        # Draw nodes
+        node_xs = [pos[node][0] for node in self.graph.nodes()]
+        node_ys = [pos[node][1] for node in self.graph.nodes()]
+        plt.scatter(node_xs, node_ys, s=700, c='skyblue', edgecolors='black')
         
-        # Draw the edges with curved arrows for bidirectional edges
-        # Create a dictionary to track bidirectional edges
+        # Track bidirectional edges
         bidirectional_edges = {}
         
         # First pass: identify bidirectional edges
-        for u, v in self.graph.edges():
+        for u, v in self.graph.get_edges():
             if self.graph.has_edge(v, u):
                 # This is a bidirectional edge
                 if (v, u) not in bidirectional_edges:  # Avoid duplicates
@@ -85,79 +206,83 @@ class GraphApi:
                     bidirectional_edges[(v, u)] = True
         
         # Draw regular edges (not bidirectional)
-        regular_edges = [(u, v) for u, v in self.graph.edges() if (u, v) not in bidirectional_edges]
-        nx.draw_networkx_edges(
-            self.graph,
-            pos,
-            edgelist=regular_edges,
-            edge_color="blue",
-            width=2,
-            alpha=0.7,
-            arrowsize=15
-        )
+        for u, v in self.graph.get_edges():
+            if (u, v) not in bidirectional_edges:
+                x1, y1 = pos[u]
+                x2, y2 = pos[v]
+                plt.plot([x1, x2], [y1, y2], color='blue', linewidth=2, alpha=0.7)
+                
+                # Add arrow to show direction
+                dx = x2 - x1
+                dy = y2 - y1
+                plt.arrow(
+                    x1 + 0.8*dx, y1 + 0.8*dy, 
+                    0.1*dx, 0.1*dy, 
+                    head_width=0.05, 
+                    head_length=0.1, 
+                    fc='blue', ec='blue'
+                )
         
-        # Draw bidirectional edges with curved arrows
+        # Draw bidirectional edges with curved lines
         for u, v in bidirectional_edges:
             # Only draw each bidirectional edge once
             if u < v:  # Arbitrary ordering to avoid duplicates
-                # Draw curved edge from u to v
-                nx.draw_networkx_edges(
-                    self.graph,
-                    pos,
-                    edgelist=[(u, v)],
-                    edge_color="green",
-                    width=2,
-                    alpha=0.7,
-                    arrowsize=15,
-                    connectionstyle="arc3,rad=0.2"  # Curved edge
+                x1, y1 = pos[u]
+                x2, y2 = pos[v]
+                
+                # Calculate curve control point
+                midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
+                normal_x, normal_y = -(y2 - y1), (x2 - x1)  # Normal to the line
+                length = (normal_x**2 + normal_y**2)**0.5
+                normal_x, normal_y = normal_x/length*0.2, normal_y/length*0.2  # Normalize and scale
+                
+                # Forward edge (u to v) - green curved arrow
+                plt.annotate(
+                    "", xy=(x2, y2), xytext=(x1, y1),
+                    arrowprops=dict(
+                        arrowstyle="->", color="green", lw=2,
+                        connectionstyle=f"arc3,rad=0.2"
+                    )
                 )
                 
-                # Draw curved edge from v to u
-                nx.draw_networkx_edges(
-                    self.graph,
-                    pos,
-                    edgelist=[(v, u)],
-                    edge_color="red",
-                    width=2,
-                    alpha=0.7,
-                    arrowsize=15,
-                    connectionstyle="arc3,rad=0.2"  # Curved edge in opposite direction
+                # Backward edge (v to u) - red curved arrow
+                plt.annotate(
+                    "", xy=(x1, y1), xytext=(x2, y2),
+                    arrowprops=dict(
+                        arrowstyle="->", color="red", lw=2,
+                        connectionstyle=f"arc3,rad=0.2"
+                    )
                 )
         
-        # Draw node labels
-        nx.draw_networkx_labels(self.graph, pos, font_size=12, font_weight='bold')
+        # Add node labels
+        for node in self.graph.nodes():
+            x, y = pos[node]
+            plt.text(x, y, node, fontsize=12, fontweight='bold', ha='center', va='center')
         
-        # Custom edge label positioning for bidirectional edges
-        edge_labels = {}
-        for u, v, data in self.graph.edges(data=True):
-            edge_labels[(u, v)] = data["cost"]
-        
-        # Draw edge cost labels with adjusted positions
-        nx.draw_networkx_edge_labels(
-            self.graph, 
-            pos, 
-            edge_labels=edge_labels, 
-            font_size=10,
-            label_pos=0.3  # Adjust label position for better visibility
-        )
-        
-        # Get axis object
-        ax = plt.gca()
-        
-        # Turn on the axis
-        plt.axis('on')
-        
-        # Set the axis limits based on node positions
-        x_values = [x for x, y in pos.values()]
-        y_values = [y for x, y in pos.values()]
-        
-        # Add some padding to the limits
-        x_min, x_max = min(x_values), max(x_values)
-        y_min, y_max = min(y_values), max(y_values)
-        padding = 0.1
-        
-        plt.xlim(x_min - padding, x_max + padding)
-        plt.ylim(y_min - padding, y_max + padding)
+        # Add edge cost labels
+        for u, v in self.graph.get_edges():
+            x1, y1 = pos[u]
+            x2, y2 = pos[v]
+            midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
+            
+            # Adjust label position for bidirectional edges
+            if (u, v) in bidirectional_edges:
+                if u < v:  # Forward edge
+                    normal_x, normal_y = -(y2 - y1), (x2 - x1)  # Normal to the line
+                    length = (normal_x**2 + normal_y**2)**0.5
+                    normal_x, normal_y = normal_x/length*0.1, normal_y/length*0.1  # Normalize and scale
+                    midx += normal_x
+                    midy += normal_y
+                else:  # Backward edge
+                    normal_x, normal_y = (y2 - y1), -(x2 - x1)  # Normal to the line
+                    length = (normal_x**2 + normal_y**2)**0.5
+                    normal_x, normal_y = normal_x/length*0.1, normal_y/length*0.1  # Normalize and scale
+                    midx += normal_x
+                    midy += normal_y
+            
+            cost = str(self.graph.edges[(u, v)].get("cost", ""))
+            plt.text(midx, midy, cost, fontsize=10, 
+                    bbox=dict(facecolor='white', alpha=0.7))
         
         # Add grid
         plt.grid(True, linestyle='--', alpha=0.7)
@@ -174,7 +299,7 @@ class GraphApi:
             Line2D([0], [0], color='green', lw=2, label='Two-way edge (forward)'),
             Line2D([0], [0], color='red', lw=2, label='Two-way edge (reverse)')
         ]
-        ax.legend(handles=legend_elements, loc='upper right')
+        plt.legend(handles=legend_elements, loc='upper right')
         
         # Adjust layout
         plt.tight_layout()
