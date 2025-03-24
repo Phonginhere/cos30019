@@ -16,6 +16,20 @@ class GraphApi:
     graph: Network
     evaporation_rate: float
 
+    def __post_init__(self):
+        """Initialize data structures for faster access"""
+        # Precompute and cache edge costs
+        self._edge_cost_cache = {}
+        self._neighbor_cache = {}
+        
+        # Precompute edge costs
+        for u, v in self.graph.get_edges():
+            self._edge_cost_cache[(u, v)] = self.graph.edges.get((u, v), {}).get("cost", float('inf'))
+        
+        # Precompute neighbors for each node
+        for node in self.graph.nodes():
+            self._neighbor_cache[node] = list(self.graph.neighbors(node))
+
     def set_edge_pheromones(self, u: str, v: str, pheromone_value: float) -> None:
         if (u, v) in self.graph.edges:
             self.graph.edges[(u, v)]["pheromones"] = pheromone_value
@@ -33,12 +47,24 @@ class GraphApi:
                 print(f"Large pheromone deposit on edge {u}->{v}: +{pheromone_amount}")
 
     def get_edge_cost(self, u: str, v: str) -> float:
+        """Get edge cost with caching for better performance"""
+        # Use cached value if available
+        if hasattr(self, '_edge_cost_cache') and (u, v) in self._edge_cost_cache:
+            return self._edge_cost_cache[(u, v)]
+        
+        # Fallback to original implementation
         return self.graph.edges.get((u, v), {}).get("cost", float('inf'))
 
     def get_all_nodes(self) -> List[str]:
         return list(self.graph.nodes())
 
     def get_neighbors(self, node: str) -> List[str]:
+        """Get neighbors with caching for better performance"""
+        # Use cached value if available
+        if hasattr(self, '_neighbor_cache') and node in self._neighbor_cache:
+            return self._neighbor_cache[node]
+        
+        # Fallback to original implementation
         return list(self.graph.neighbors(node))
     
     def get_pheromone_levels(self) -> Dict:

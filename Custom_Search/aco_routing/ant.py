@@ -32,61 +32,79 @@ class Ant:
     # Indicates if the ant is the pheromone-greedy solution ant
     is_solution_ant: bool = False
 
-    @classmethod
-    def from_path(cls, graph_api, path, path_cost, is_solution_ant=False):
-        """Create an ant with a predefined path
-        
-        Args:
-            graph_api: The graph API instance
-            path: The path for the ant
-            path_cost: The cost of the path
-            is_solution_ant: Whether this is a solution ant
-            
-        Returns:
-            Ant: A new ant with the given path
-        """
-        ant = cls(
-            graph_api=graph_api,
-            source=path[0],
-            destination=path[-1],
-            is_solution_ant=is_solution_ant,
-        )
-        
-        # Set the path and other properties
-        ant.path = path.copy()
-        ant.current_node = path[-1]
-        ant.path_cost = path_cost
-        ant.is_fit = True
-        
-        # Mark all nodes in the path as visited
-        ant.visited_nodes = set(path)
-        
-        return ant
+@dataclass
+class Ant:
+    graph_api: GraphApi
+    source: str
+    # Change from single string to support multiple destinations
+    destination: Union[str, List[str], Set[str]] = field(default_factory=list)
+    # Pheromone bias
+    alpha: float = 0.7
+    # Edge cost bias
+    beta: float = 0.3
+    # Set of nodes that have been visited by the ant
+    visited_nodes: Set = field(default_factory=set)
+    # Path taken by the ant so far
+    path: List[str] = field(default_factory=list)
+    # Cost of the path taken by the ant so far
+    path_cost: float = 0.0
+    # Indicates if the ant has reached the destination (fit) or not (unfit)
+    is_fit: bool = False
+    # Indicates if the ant is the pheromone-greedy solution ant
+    is_solution_ant: bool = False
+    # Track destinations that have been visited
+    visited_destinations: Set = field(default_factory=set)
 
     def __post_init__(self) -> None:
         # Set the spawn node as the current and first node
         self.current_node = self.source
         self.path.append(self.source)
+        
+        # Convert destination to set for efficient lookups
+        if isinstance(self.destination, str):
+            self.destination_set = {self.destination}
+        elif isinstance(self.destination, list):
+            self.destination_set = set(self.destination)
+        else:
+            self.destination_set = self.destination
+            
+        # Initialize visited destinations
+        self.visited_destinations = set()
+        if self.current_node in self.destination_set:
+            self.visited_destinations.add(self.current_node)
 
     def reached_destination(self) -> bool:
-        """Returns if the ant has reached the destination node in the graph
-
+        """Returns if the ant has reached all specified destinations
+        
+        For single destination: returns True when current node equals destination
+        For multiple destinations: returns True when all destinations have been visited
+        
         Returns:
-            bool: returns True if the ant has reached the destination
+            bool: True if all destinations have been reached
         """
-        return self.current_node == self.destination
+        if not hasattr(self, 'destination_set'):
+            # Handle legacy code where destination might be a string
+            if isinstance(self.destination, str):
+                return self.current_node == self.destination
+            else:
+                self.destination_set = set(self.destination) if isinstance(self.destination, list) else self.destination
+                self.visited_destinations = set()
+                
+        # Update visited destinations
+        if self.current_node in self.destination_set:
+            self.visited_destinations.add(self.current_node)
+            
+        # Check if all destinations have been visited
+        return self.visited_destinations == self.destination_set
 
     def _get_unvisited_neighbors(self) -> List[str]:
-        """Returns a subset of the neighbors of the node which are unvisited
-
-        Returns:
-            List[str]: A list of all the unvisited neighbors
-        """
-        return [
-            node
-            for node in self.graph_api.get_neighbors(self.current_node)
-            if node not in self.visited_nodes
-        ]
+        """Get unvisited neighbors with optimized set lookup"""
+        # Use a set for faster membership testing
+        visited_set = self.visited_nodes
+        
+        # Use list comprehension with faster set lookup
+        return [node for node in self.graph_api.get_neighbors(self.current_node) 
+                if node not in visited_set]
 
     def _compute_all_edges_desirability(
         self,
@@ -209,37 +227,28 @@ class Ant:
         """Compute and update the ant position"""
         # Mark the current node as visited
         self.visited_nodes.add(self.current_node)
+        
+        # Update visited destinations
+        if self.current_node in self.destination_set:
+            self.visited_destinations.add(self.current_node)
 
         # Pick the next node of the ant
         next_node = self._choose_next_node()
 
-        # Check if ant is stuck at current node or has reached destination
+        # Check if ant is stuck at current node or has reached all destinations
         if not next_node:
-            if self.current_node == self.destination:
+            if self.reached_destination():
                 self.is_fit = True
-            return
-
-        # If backtracking (solution ant only)
-        if next_node in self.path:
-            # Remove all nodes after the backtrack point
-            idx = self.path.index(next_node)
-            # Remove path cost for edges we're removing
-            for i in range(len(self.path) - 2, idx - 1, -1):
-                u, v = self.path[i], self.path[i + 1]
-                self.path_cost -= self.graph_api.get_edge_cost(u, v)
-            # Truncate path
-            self.path = self.path[:idx + 1]
-            self.current_node = next_node
-            # Remove these nodes from visited set to allow revisiting
-            for node in self.visited_nodes.copy():
-                if node not in self.path:
-                    self.visited_nodes.remove(node)
             return
 
         # Standard case: add the new node to the path
         self.path.append(next_node)
         self.path_cost += self.graph_api.get_edge_cost(self.current_node, next_node)
         self.current_node = next_node
+        
+        # Update visited_destinations if we've reached a destination
+        if self.current_node in self.destination_set:
+            self.visited_destinations.add(self.current_node)
 
     def deposit_pheromones_on_path(self) -> None:
         """Updates the pheromones along all the edges in the path"""

@@ -30,77 +30,78 @@ except ImportError:
         return nodes, edges, '1', ['5']
 
 def main():
+    # Get file path from command line argument if provided
+    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/PathFinder-test.txt"
+    try:
+        nodes, edges, origin, destinations = parse_graph_file(file_path)
+    except Exception as e:
+        print(f"Error parsing graph file: {e}")
+        return
+    
     # Read the graph data from the file
-    file_path = "Data/PathFinder-test.txt"  # Replace with your actual file name
+    file_path = "Data/PathFinder-test.txt"
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
     except Exception as e:
         print(f"Error parsing graph file: {e}")
         return
 
-    # Create the graph using our custom Network class
+    # Create the graph - optimize memory usage
     G = Network()
     
-    # Add all nodes first
-    for node in nodes:
-        if node not in G.graph:
-            G.graph[node] = []
+    # Pre-allocate graph memory
+    G.graph = {node: [] for node in nodes}
     
-    # Then add all edges with weights
+    # Add edges efficiently
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=weight)
 
-    # Initialize ACO with parameters
-    aco = ACO(G, ant_max_steps=500, num_iterations=200, evaporation_rate=0.1, alpha=1, beta=2, ant_random_spawn=False)
+    # Optimize parameters based on graph size
+    node_count = G.number_of_nodes()
+    edge_count = G.number_of_edges()
+    
+    # Scale parameters to problem size
+    ant_max_steps = min(250, 75 * node_count)  # Limit steps based on graph size
+    iterations = min(200, 150 * node_count)   # Limit iterations based on graph size
+    num_ants = min(100, 40 * node_count)      # Scale ant count to graph size
+    
+    # Initialize ACO with optimized parameters
+    aco = ACO(G, 
+              ant_max_steps=ant_max_steps,
+              num_iterations=iterations, 
+              evaporation_rate=0.1, 
+              alpha=1, 
+              beta=2, 
+              ant_random_spawn=False)
 
     try:
-        # Handle single or multiple destinations
-        if isinstance(destinations, list) and len(destinations) == 1:
-            # For a single destination
-            aco_path, aco_cost = aco.find_path_with_single_destination(
+        # Check if multiple destinations need to be visited
+        if isinstance(destinations, list) and len(destinations) > 1:
+            # Multiple destinations - order doesn't matter
+            aco_path, aco_cost = aco.find_path_with_multiple_destinations(
                 source=origin,
-                destination=destinations[0],
-                num_ants=1000,
+                destinations=destinations,
+                num_ants=num_ants
             )
         else:
-            # For multiple destinations
-            if hasattr(aco, 'find_path_with_multiple_destinations'):
-                aco_path, aco_cost = aco.find_path_with_multiple_destinations(
-                    source=origin,
-                    destinations=destinations,
-                    num_ants=1000
-                )
-            else:
-                # Fallback to finding individual paths
-                aco_path, aco_cost = aco.find_path_with_single_destination(
-                    source=origin,
-                    destination=destinations[0] if isinstance(destinations, list) else destinations,
-                    num_ants=1000
-                )
+            # Single destination case
+            dest = destinations[0] if isinstance(destinations, list) else destinations
+            aco_path, aco_cost = aco.find_path_with_single_destination(
+                source=origin,
+                destination=dest,
+                num_ants=num_ants
+            )
         
-        # Convert all path nodes to strings (in case any are integers)
+        # Output results
         aco_path = [str(node) for node in aco_path]
-        
-        # Output results in the required format
-        goal = destinations[0] if isinstance(destinations, list) else destinations
+        goal = destinations
         number_of_nodes = G.number_of_nodes()
         path_str = " ".join(aco_path)
         
         print(f"\"aco_search.py\" CUS2")
         print(f"{goal} {number_of_nodes}")
         print(f"{path_str}")
-        
-        # Visualization code - uncomment to use
-        try:
-            # Visualize the path if needed
-            aco.graph_api.visualize_graph(shortest_path=aco_path, shortest_path_cost=aco_cost)
-            
-            # Visualize the original graph structure
-            # aco.graph_api.visualize_original_graph()
-        except Exception as e:
-            # This way, visualization errors won't affect your required output
-            print(f"Visualization error: {e}")
-        
+        # print(f"{aco_cost}")
     except Exception as e:
         print(f"Error finding path: {e}")
 

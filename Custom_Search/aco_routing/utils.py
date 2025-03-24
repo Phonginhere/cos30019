@@ -1,5 +1,7 @@
 import random
 from typing import Dict
+# Add caching for edge desirability calculations
+_desirability_cache = {}
 
 def compute_edge_desirability(
     pheromone_value: float, 
@@ -7,23 +9,25 @@ def compute_edge_desirability(
     alpha: float, 
     beta: float
 ) -> float:
-    """Compute the desirability of an edge based on pheromones and cost
+    """Compute the desirability with caching for better performance"""
+    # Cache key for this computation
+    cache_key = (pheromone_value, edge_cost, alpha, beta)
     
-    Args:
-        pheromone_value: The amount of pheromone on the edge
-        edge_cost: The cost of traversing the edge
-        alpha: Pheromone importance factor
-        beta: Distance importance factor
+    # Return cached result if available
+    if cache_key in _desirability_cache:
+        return _desirability_cache[cache_key]
         
-    Returns:
-        float: The desirability value of the edge
-    """
-    # Avoid division by zero
+    # Standard calculation
     if edge_cost == 0:
         edge_cost = 1e-10
+    
+    result = (pheromone_value ** alpha) * ((1 / edge_cost) ** beta)
+    
+    # Store in cache (but limit cache size)
+    if len(_desirability_cache) < 10000:  # Prevent memory issues
+        _desirability_cache[cache_key] = result
         
-    # Formula: τᵢⱼᵅ * (1/dᵢⱼ)ᵝ
-    return (pheromone_value ** alpha) * ((1 / edge_cost) ** beta)
+    return result
 
 def roulette_wheel_selection(probabilities: Dict[str, float]) -> str:
     """Select a key from a dictionary based on probability values
