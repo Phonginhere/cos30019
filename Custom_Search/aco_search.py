@@ -231,7 +231,7 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
-              ant_random_spawn=False)
+              ant_random_spawn=True) # Parallize optimization
 
 
     try:
