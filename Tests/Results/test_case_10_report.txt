@@ -1,9 +1,9 @@
 # Test Results for test_case_10.txt
 
 Success: True
-Execution time: 0.699 seconds
+Execution time: 2.788 seconds
 
-Algorithm info: "aco_search.py" CUS2
-Goal info: [1, 5] 10
-Path: No path found: Could not find a path from 2 that visits all destinations: ['1', '5']
-Cost: 0.0
+Algorithm info: Adaptive parameters: ant_max_steps=500, iterations=333, num_ants=24
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [1, 5] 10

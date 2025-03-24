@@ -5,241 +5,241 @@ Failed: 0
 
 ## Test: test_case_01.txt
 Success: True
-Execution time: 0.371 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [4] 8
-Path: 1 2 3 4
-Cost: 3.0
+Execution time: 0.413 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=208, num_ants=27
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [4] 8
 
 ## Test: test_case_02.txt
 Success: True
-Execution time: 0.390 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [4] 8
-Path: 1 2 4
-Cost: 2.0
+Execution time: 0.402 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=230, num_ants=27
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [4] 8
 
 ## Test: test_case_03.txt
 Success: True
-Execution time: 0.390 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [2] 6
-Path: 1 2
-Cost: 4.0
+Execution time: 0.383 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=30, iterations=172, num_ants=24
+Goal info: ACO tuning: evaporation_rate=0.08, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [2] 6
 
 ## Test: test_case_04.txt
 Success: True
-Execution time: 0.404 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3] 8
-Path: 1 2 3
-Cost: 6.0
+Execution time: 0.392 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=230, num_ants=27
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3] 8
 
 ## Test: test_case_05.txt
 Success: True
-Execution time: 0.393 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3, 5] 10
-Path: 1 4 5 6 3
-Cost: 8.0
+Execution time: 0.398 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=500, iterations=387, num_ants=24
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3, 5] 10
 
 ## Test: test_case_06.txt
 Success: True
-Execution time: 0.367 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [4] 8
-Path: 1 3 4
-Cost: 3.0
+Execution time: 0.403 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=230, num_ants=33
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [4] 8
 
 ## Test: test_case_07.txt
 Success: True
-Execution time: 0.386 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3] 8
-Path: 1 2 3
-Cost: 2.0
+Execution time: 0.395 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=187, num_ants=27
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3] 8
 
 ## Test: test_case_08.txt
 Success: True
-Execution time: 0.736 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [2, 4] 12
-Path: 1 2 6 4
-Cost: 7.0
+Execution time: 2.972 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=720, iterations=432, num_ants=32
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [2, 4] 12
 
 ## Test: test_case_09.txt
 Success: True
-Execution time: 0.367 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3] 8
-Path: 1 3
-Cost: 3.0
+Execution time: 0.377 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=480, iterations=208, num_ants=30
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3] 8
 
 ## Test: test_case_10.txt
 Success: True
-Execution time: 0.699 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [1, 5] 10
-Path: No path found: Could not find a path from 2 that visits all destinations: ['1', '5']
-Cost: 0.0
+Execution time: 2.788 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=500, iterations=333, num_ants=24
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [1, 5] 10
 
 ## Test: test_case_11.txt
 Success: True
-Execution time: 0.433 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [9] 18
-Path: 1 5 9
-Cost: 2.0
+Execution time: 0.568 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=67
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [9] 18
 
 ## Test: test_case_12.txt
 Success: True
-Execution time: 0.368 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3, 6] 12
-Path: 1 2 3 6
-Cost: 4.0
+Execution time: 0.416 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=720, iterations=458, num_ants=36
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3, 6] 12
 
 ## Test: test_case_13.txt
 Success: True
-Execution time: 0.370 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [5] 14
-Path: 1 2 3 4 5
-Cost: 8.0
+Execution time: 0.384 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1470, iterations=403, num_ants=51
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [5] 14
 
 ## Test: test_case_14.txt
 Success: True
-Execution time: 4.246 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3, 7, 9] 18
-Path: 1 4 7 8 9 6 3
-Cost: 12.0
+Execution time: 18.847 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=2000, iterations=750, num_ants=50
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3, 7, 9] 18
 
 ## Test: test_case_15.txt
 Success: True
-Execution time: 0.401 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [7] 14
-Path: No path found: Solution ant could not reach destination after 1960 steps
-Cost: 0.0
+Execution time: 0.548 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1470, iterations=445, num_ants=48
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [7] 14
 
 ## Test: test_case_16.txt
 Success: True
-Execution time: 0.359 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [6] 12
-Path: 1 2 3 6
-Cost: 4.0
+Execution time: 0.379 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1080, iterations=324, num_ants=42
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [6] 12
 
 ## Test: test_case_17.txt
 Success: True
-Execution time: 0.364 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [3] 10
-Path: 1 5 3
-Cost: 2.0
+Execution time: 0.380 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=750, iterations=244, num_ants=36
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [3] 10
 
 ## Test: test_case_18.txt
 Success: True
-Execution time: 0.386 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [5] 14
-Path: 1 3 5
-Cost: 6.0
+Execution time: 0.471 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1470, iterations=424, num_ants=48
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [5] 14
 
 ## Test: test_case_19.txt
 Success: True
-Execution time: 0.474 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [12] 24
-Path: No path found: Solution ant could not reach destination after 4000 steps
-Cost: 0.0
+Execution time: 0.652 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=90
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [12] 24
 
 ## Test: test_case_20.txt
 Success: True
-Execution time: 0.395 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [9] 18
-Path: 1 4 7 8 9
-Cost: 6.0
+Execution time: 0.557 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=874, num_ants=82
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [9] 18
 
 ## Test: test_case_21.txt
 Success: True
-Execution time: 0.564 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [10] 20
-Path: 1 2 4 6 8 10
-Cost: 15.0
+Execution time: 1.247 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=78
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [10] 20
 
 ## Test: test_case_22.txt
 Success: True
-Execution time: 0.439 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [5] 18
-Path: 1 2 3 4 5
-Cost: 8.0
+Execution time: 0.617 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1500, iterations=600, num_ants=63
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [5] 18
 
 ## Test: test_case_23.txt
 Success: True
-Execution time: 0.376 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [9] 18
-Path: 1 9
-Cost: 2.0
+Execution time: 0.431 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=49, iterations=600, num_ants=60
+Goal info: ACO tuning: evaporation_rate=0.08, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [9] 18
 
 ## Test: test_case_24.txt
 Success: True
-Execution time: 0.423 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [7] 14
-Path: 1 3 5 7
-Cost: 26.0
+Execution time: 0.634 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1470, iterations=445, num_ants=51
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [7] 14
 
 ## Test: test_case_25.txt
 Success: True
-Execution time: 0.387 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [8] 16
-Path: 1 2 3 4 6 8
-Cost: 13.0
+Execution time: 0.494 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=1500, iterations=589, num_ants=66
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [8] 16
 
 ## Test: test_case_26.txt
 Success: True
-Execution time: 0.371 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [9] 18
-Path: 1 2 3 6 9
-Cost: 4.0
+Execution time: 0.399 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=874, num_ants=72
+Goal info: ACO tuning: evaporation_rate=0.05, alpha=0.80, beta=2.00
+Path: "aco_search.py" CUS2
+Cost: [9] 18
 
 ## Test: test_case_27.txt
 Success: True
-Execution time: 0.903 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [15] 30
-Path: 1 2 3 4 5 10 15
-Cost: 9.0
+Execution time: 2.854 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=118
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [15] 30
 
 ## Test: test_case_28.txt
 Success: True
-Execution time: 0.495 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [9] 18
-Path: 1 2 5 8 9
-Cost: 8.0
+Execution time: 0.810 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=775, num_ants=67
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [9] 18
 
 ## Test: test_case_29.txt
 Success: True
-Execution time: 1.141 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [20] 40
-Path: No path found: Solution ant could not reach destination after 4000 steps
-Cost: 0.0
+Execution time: 4.194 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=154
+Goal info: ACO tuning: evaporation_rate=0.05, alpha=1.10, beta=1.65
+Path: "aco_search.py" CUS2
+Cost: [20] 40
 
 ## Test: test_case_30.txt
 Success: True
-Execution time: 0.692 seconds
-Algorithm info: "aco_search.py" CUS2
-Goal info: [12] 24
-Path: No path found: Solution ant could not reach destination after 4000 steps
-Cost: 0.0
+Execution time: 1.936 seconds
+Algorithm info: Adaptive parameters: ant_max_steps=3000, iterations=900, num_ants=121
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [12] 24
 

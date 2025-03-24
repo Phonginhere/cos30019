@@ -1,9 +1,9 @@
 # Test Results for test_case_15.txt
 
 Success: True
-Execution time: 0.401 seconds
+Execution time: 0.548 seconds
 
-Algorithm info: "aco_search.py" CUS2
-Goal info: [7] 14
-Path: No path found: Solution ant could not reach destination after 1960 steps
-Cost: 0.0
+Algorithm info: Adaptive parameters: ant_max_steps=1470, iterations=445, num_ants=48
+Goal info: ACO tuning: evaporation_rate=0.04, alpha=0.80, beta=1.50
+Path: "aco_search.py" CUS2
+Cost: [7] 14
