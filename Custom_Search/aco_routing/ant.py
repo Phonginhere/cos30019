@@ -188,19 +188,6 @@ class Ant:
             if self.current_node == self.destination:
                 self.is_fit = True
                 return None
-                
-            # If the solution ant has no moves and isn't at the destination, we need to backtrack
-            if self.is_solution_ant:
-                # If we've visited all nodes and can't reach destination, that's a problem
-                if len(self.visited_nodes) >= self.graph_api.graph.number_of_nodes():
-                    raise Exception(f"No path found from {self.source} to {self.destination}")
-                    
-                # For the solution ant, try to minimize visited node constraints
-                # This allows backtracking to find a path
-                if len(self.path) > 1:
-                    # Try to go back one step
-                    previous = self.path[-2]
-                    return previous
             
             return None
 

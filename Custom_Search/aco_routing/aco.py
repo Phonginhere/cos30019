@@ -136,10 +136,6 @@ class ACO:
         Returns:
             Ant: The solution ant with the computed shortest path and cost
         """
-        # If we already found a good path with the search ants, use it
-        if self.best_path and self.best_path[0] == source and self.best_path[-1] == destination:
-            return Ant.from_path(self.graph_api, self.best_path, self.best_cost, is_solution_ant=True)
-        
         # Otherwise, create a new solution ant
         ant = Ant(
             self.graph_api,
@@ -158,10 +154,6 @@ class ACO:
             steps += 1
             
         if not ant.reached_destination():
-            # If solution ant failed but we have a best path, use that instead
-            if self.best_path and self.best_path[0] == source and self.best_path[-1] == destination:
-                return Ant.from_path(self.graph_api, self.best_path, self.best_cost, is_solution_ant=True)
-            
             raise Exception(f"Solution ant could not reach destination after {steps} steps.")
             
         return ant
