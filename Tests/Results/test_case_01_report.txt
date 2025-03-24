@@ -1,0 +1,9 @@
+# Test Results for test_case_01.txt
+
+Success: True
+Execution time: 0.371 seconds
+
+Algorithm info: "aco_search.py" CUS2
+Goal info: [4] 8
+Path: 1 2 3 4
+Cost: 3.0
