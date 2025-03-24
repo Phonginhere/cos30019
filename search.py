@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 import importlib.util
+import traceback
 
 def main():
     # Check if algorithm name is provided
@@ -19,21 +20,45 @@ def main():
     if algorithm == "CUS2":
         # Option 1: Use importlib to run the module function
         try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            custom_search_dir = os.path.join(current_dir, "Custom_Search")
+            module_path = os.path.join(custom_search_dir, "aco_search.py")
+            
+            # Add Custom_Search directory to sys.path so its modules can be found
+            if custom_search_dir not in sys.path:
+                sys.path.insert(0, custom_search_dir)
+            
             # Check if the module exists
-            module_path = os.path.join(os.path.dirname(__file__), "Custom_Search", "aco_search.py")
             if os.path.exists(module_path):
+                print(f"Loading ACO module from: {module_path}")
+                
                 # Import the module
                 spec = importlib.util.spec_from_file_location("aco_search", module_path)
                 aco_module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(aco_module)
                 
+                # Pass remaining args to sys.argv for the module to access
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [module_path] + remaining_args
+                else:
+                    sys.argv = [module_path]
+                
                 # Run the main function
                 aco_module.main()
+                
+                # Restore original argv
+                sys.argv = original_argv
             else:
                 print(f"Error: Module {module_path} not found!")
                 sys.exit(1)
         except Exception as e:
             print(f"Error executing ACO search: {e}")
+            traceback.print_exc()  # Print the full stack trace for debugging
             sys.exit(1)
     
     elif algorithm == "BFS":
@@ -56,7 +81,6 @@ def main():
         # Add Uniform Cost Search implementation here
         print("Uniform Cost Search algorithm selected (not implemented yet)")
         
-    
     else:
         print(f"Unknown algorithm: {algorithm}")
         sys.exit(1)
