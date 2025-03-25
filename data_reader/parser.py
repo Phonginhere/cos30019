@@ -11,7 +11,7 @@ def parse_graph_file(file_path):
         tuple: A tuple containing:
             - nodes (dict): Mapping of node IDs to coordinates {node_id: (x, y)}.
             - edges (dict): Mapping of edge pairs to weights {(node1, node2): weight}.
-            - origin (int): The origin node.
+            - origin (str): The origin node.
             - destinations (list): List of destination nodes.
     """
     nodes = {}
@@ -42,7 +42,7 @@ def parse_graph_file(file_path):
             if section == "nodes":
                 match = re.match(r"(\d+): \((\d+),(\d+)\)", line)
                 if match:
-                    node_id = int(match.group(1))
+                    node_id = str(match.group(1))
                     x, y = int(match.group(2)), int(match.group(3))
                     nodes[node_id] = (x, y)
             
@@ -53,10 +53,10 @@ def parse_graph_file(file_path):
                     edges[(node1, node2)] = weight
             
             elif section == "origin":
-                origin = int(line)
+                origin = str(line)
             
             elif section == "destinations":
-                destinations = list(map(int, line.split(';')))
+                destinations = list(map(str, line.split(';')))
     
     return nodes, edges, origin, destinations
 

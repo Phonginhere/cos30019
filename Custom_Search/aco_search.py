@@ -170,7 +170,6 @@ def main():
     # Get file path from command line argument if provided
     file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/PathFinder-test.txt"
     
-    # Fixed: Remove duplicate file loading - only load once
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
     except Exception as e:
@@ -178,49 +177,20 @@ def main():
         traceback.print_exc()
         return
 
-    # Ensure origin is a string (not an int)
-    if isinstance(origin, int):
-        origin = str(origin)
-    
-    # Convert destinations to a consistent format
-    try:
-        if isinstance(destinations, int):
-            destinations = [str(destinations)]  # Convert int to string
-        elif isinstance(destinations, str):
-            destinations = [destinations]  # Wrap single string in list
-        elif isinstance(destinations, list):
-            # Convert any integers in the list to strings
-            destinations = [str(d) if isinstance(d, int) else d for d in destinations]
-        else:
-            # Handle any other unexpected types
-            print(f"Warning: Unexpected destinations type: {type(destinations)}", file=sys.stderr)
-            try:
-                # Try to convert to list
-                destinations = [str(d) for d in destinations] if hasattr(destinations, '__iter__') else [str(destinations)]
-            except Exception as e:
-                print(f"Error converting destinations: {e}", file=sys.stderr)
-                destinations = [str(destinations)]  # Last resort
-    except Exception as e:
-        print(f"Error handling destinations: {e}", file=sys.stderr)
-        traceback.print_exc()
-        destinations = ['1']  # Default fallback
-    
-
     # Create the graph - optimize memory usage
     G = Network()
     
     # Pre-allocate graph memory
-    # Convert all nodes to strings first to ensure consistency
-    string_nodes = [str(node) for node in nodes]
-    G.graph = {node: [] for node in string_nodes}
-
+    G.graph = {node: [] for node in nodes}
+    G.pos = nodes
+    
     # Add edges efficiently with consistent string conversion
     for (start, end), weight in edges.items():
         # Ensure nodes are strings
         start_str = str(start)
         end_str = str(end)
         G.add_edge(start_str, end_str, cost=float(weight))
-
+        
     # Calculate adaptive parameters
     ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
     
@@ -263,7 +233,7 @@ def main():
             print("0.0")
         else:
             # Normal output
-            aco_path = [str(node) for node in aco_path]
+            aco_path = [node for node in aco_path]
             goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
             number_of_nodes = G.number_of_nodes()
             path_str = " ".join(aco_path)
@@ -274,6 +244,7 @@ def main():
             print(f"{aco_cost}")
             
             aco.graph_api.visualize_graph(aco_path, aco_cost)
+            
     except Exception as e:
         # Always produce valid output format even on error
         print(f"\"aco_search.py\" CUS2")

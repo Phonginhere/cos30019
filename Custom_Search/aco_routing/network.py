@@ -2,6 +2,7 @@ class Network:
     def __init__(self):
         self.graph = {}  # Stores adjacency list: node -> list of neighbors
         self.edges = {}  # Stores edge attributes: (u,v) -> attribute dict
+        self.pos = {}
 
     def add_edge(self, u, v, **attr):
         """Add an edge between u and v with optional attributes."""
@@ -61,44 +62,8 @@ class Network:
             # Create a NodeDict that simulates NetworkX node access
             return NodeDict(self, node)
         raise KeyError(f"Node {node} not in graph")
-        
-    def draw(self, pos, **kwargs):
-        # Placeholder for drawing method
-        pass
-
-    def draw_networkx_nodes(self, pos, **kwargs):
-        # Placeholder for drawing nodes method
-        pass
-
-    def draw_networkx_edges(self, pos, **kwargs):
-        # Placeholder for drawing edges method
-        pass
-
-    def draw_networkx_labels(self, pos, **kwargs):
-        # Placeholder for drawing labels method
-        pass
-
-    def draw_networkx_edge_labels(self, pos, edge_labels, **kwargs):
-        # Placeholder for drawing edge labels method
-        pass
-
-    def spring_layout(self, **kwargs):
-        """Return a dictionary of node positions in 2D."""
-        pos = {}
-        # Simple grid layout for visualization
-        cols = max(int(len(self.graph) ** 0.5) + 1, 3)
-        for i, node in enumerate(self.graph):
-            row = i // cols
-            col = i % cols
-            # Add some jitter for better visualization
-            jitter_x = (hash(str(node)) % 100) / 500
-            jitter_y = (hash(str(node) + '1') % 100) / 500
-            pos[node] = (col + jitter_x, row + jitter_y)
-        return pos
-
 
 class NodeDict:
-    """Helper class to simulate NetworkX node dictionary access."""
     def __init__(self, network, node):
         self.network = network
         self.node = node

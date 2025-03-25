@@ -93,12 +93,6 @@ class GraphApi:
             # Create a figure with a specific size
             plt.figure(figsize=(12, 10))
             
-            # Create positions for nodes (simple grid layout)
-            pos = self.graph.spring_layout()
-            
-            # Convert all position keys to strings for consistency
-            pos = {str(k): v for k, v in pos.items()}
-            
             # Create a set of path edges for easy lookup
             path_edges = set()
             for i in range(len(shortest_path) - 1):
@@ -107,16 +101,19 @@ class GraphApi:
             # Draw ALL nodes in the graph
             path_nodes = set(shortest_path)
             all_nodes = list(self.graph.nodes())
+            print(path_nodes)
+            print("-----")
+            print(self.graph.pos)
             
             # Draw non-path nodes first (in the background)
-            non_path_nodes = [node for node in all_nodes if str(node) not in path_nodes]
-            non_path_xs = [pos[str(node)][0] for node in non_path_nodes if str(node) in pos]
-            non_path_ys = [pos[str(node)][1] for node in non_path_nodes if str(node) in pos]
+            non_path_nodes = [node for node in all_nodes if node not in path_nodes]
+            non_path_xs = [self.graph.pos[node][0] for node in non_path_nodes if node in self.graph.pos]
+            non_path_ys = [self.graph.pos[node][1] for node in non_path_nodes if node in self.graph.pos]
             plt.scatter(non_path_xs, non_path_ys, s=700, c='skyblue', edgecolors='black', zorder=1)
             
             # Draw path nodes on top (highlighted)
-            path_xs = [pos[node][0] for node in path_nodes if node in pos]
-            path_ys = [pos[node][1] for node in path_nodes if node in pos]
+            path_xs = [self.graph.pos[node][0] for node in path_nodes if node in self.graph.pos]
+            path_ys = [self.graph.pos[node][1] for node in path_nodes if node in self.graph.pos]
             plt.scatter(path_xs, path_ys, s=900, c='lightcoral', edgecolors='black', zorder=2)
             
             # Draw only the edges that are in the path
@@ -124,11 +121,11 @@ class GraphApi:
                 u, v = shortest_path[i], shortest_path[i + 1]
                 
                 # Skip if either node position is missing
-                if u not in pos or v not in pos:
+                if u not in self.graph.pos or v not in self.graph.pos:
                     continue
                     
-                x1, y1 = pos[u]
-                x2, y2 = pos[v]
+                x1, y1 = self.graph.pos[u]
+                x2, y2 = self.graph.pos[v]
                 
                 # Draw path edge
                 plt.plot([x1, x2], [y1, y2], color='red', linewidth=3, zorder=3)
@@ -171,10 +168,10 @@ class GraphApi:
             # Add node labels for ALL nodes
             for node in all_nodes:
                 str_node = str(node)
-                if str_node not in pos:
+                if str_node not in self.graph.pos:
                     continue
                     
-                x, y = pos[str_node]
+                x, y = self.graph.pos[str_node]
                 # Highlight path node labels
                 if str_node in path_nodes:
                     plt.text(x, y, str_node, fontsize=14, fontweight='bold', ha='center', va='center', zorder=6)
@@ -203,6 +200,9 @@ class GraphApi:
             # Adjust layout
             plt.tight_layout()
             
+            plt.xlim(0, 12)  # Set x-axis range from 0 to 12
+            plt.ylim(0, 12)  # Set y-axis range from 0 to 12
+            
             # Show the plot
             plt.show()
         
@@ -216,7 +216,7 @@ class GraphApi:
         plt.figure(figsize=(12, 10))
         
         # Create positions for nodes (simple grid layout)
-        pos = self.graph.spring_layout()
+        pos = self.graph.pos
         
         # Draw nodes
         node_xs = [pos[node][0] for node in self.graph.nodes()]
