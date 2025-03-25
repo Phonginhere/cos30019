@@ -11,27 +11,6 @@ sys.path.append(parent_dir)
 from aco_routing import utils
 from aco_routing.graph_api import GraphApi
 
-
-@dataclass
-class Ant:
-    graph_api: GraphApi
-    source: str
-    destination: str
-    # Pheromone bias
-    alpha: float = 0.7
-    # Edge cost bias
-    beta: float = 0.3
-    # Set of nodes that have been visited by the ant
-    visited_nodes: Set = field(default_factory=set)
-    # Path taken by the ant so far
-    path: List[str] = field(default_factory=list)
-    # Cost of the path taken by the ant so far
-    path_cost: float = 0.0
-    # Indicates if the ant has reached the destination (fit) or not (unfit)
-    is_fit: bool = False
-    # Indicates if the ant is the pheromone-greedy solution ant
-    is_solution_ant: bool = False
-
 @dataclass
 class Ant:
     graph_api: GraphApi
@@ -54,6 +33,8 @@ class Ant:
     is_solution_ant: bool = False
     # Track destinations that have been visited
     visited_destinations: Set = field(default_factory=set)
+    # Mode to control objection function
+    mode: int = 0
 
     def __post_init__(self) -> None:
         # Set the spawn node as the current and first node
@@ -95,7 +76,10 @@ class Ant:
             self.visited_destinations.add(self.current_node)
             
         # Check if all destinations have been visited
-        return self.visited_destinations == self.destination_set
+        if self.mode == 0:
+            return len(self.visited_destinations) > 0
+        else:
+            return self.visited_destinations == self.destination_set
 
     def _get_unvisited_neighbors(self) -> List[str]:
         """Get unvisited neighbors with optimized set lookup"""
@@ -103,7 +87,7 @@ class Ant:
         visited_set = self.visited_nodes
         
         # Use list comprehension with faster set lookup
-        return [node for node in self.graph_api.get_neighbors(self.current_node) 
+        return [node for node in self.graph_api.get_neighbors(self.current_node)
                 if node not in visited_set]
 
     def _compute_all_edges_desirability(
@@ -207,8 +191,13 @@ class Ant:
         # For regular ants, use probabilistic selection
         probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
         
-        # Pick the next node based on the roulette wheel selection technique
-        return utils.roulette_wheel_selection(probabilities)
+        # Check for equal probabilities
+        if all(prob == 1.0 / len(unvisited_neighbors) for prob in probabilities.values()):
+            print(min(prob for prob in probabilities.keys()))
+            return min(prob for prob in probabilities.keys())
+        else:
+            # Pick the next node based on the roulette wheel selection technique
+            return utils.roulette_wheel_selection(probabilities)
 
     def take_step(self) -> None:
         """Compute and update the ant position"""

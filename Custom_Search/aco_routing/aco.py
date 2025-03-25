@@ -35,6 +35,12 @@ class ACO:
     best_path: List[str] = field(default_factory=list)
     # Cost of the best path
     best_cost: float = float('inf')
+    # mode to control objection function
+    """
+    mode = 0: find 1 from destinations list
+    mode = 1: find all destinations in destinations list
+    """
+    mode: int = 0
 
     def __post_init__(self):
         # Initialize the Graph API
@@ -98,6 +104,7 @@ class ACO:
                     destination,
                     alpha=self.alpha,
                     beta=self.beta,
+                    mode=self.mode
                 )
                 self.search_ants.append(ant)
 
@@ -143,7 +150,8 @@ class ACO:
             destination,
             is_solution_ant=True,
             # Use higher beta for solution ant to favor shorter paths
-            beta=max(self.beta * 2, 3.0)
+            beta=max(self.beta * 2, 3.0),
+            mode=self.mode
         )
         
         steps = 0
@@ -219,6 +227,7 @@ class ACO:
                 destination=destination_set,  # Pass the set of destinations
                 alpha=self.alpha,
                 beta=self.beta,
+                mode=self.mode
             )
             self.search_ants.append(ant)
         

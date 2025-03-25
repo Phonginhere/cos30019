@@ -233,8 +233,8 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
+              mode=0, 
               ant_random_spawn=True) # Parallize optimization
-
 
     try:
         # Check if multiple destinations need to be visited
