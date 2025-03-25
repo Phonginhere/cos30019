@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import Dict, List, Set, Union
 import os
 import sys
@@ -10,47 +11,33 @@ sys.path.append(parent_dir)
 from aco_routing import utils
 from aco_routing.graph_api import GraphApi
 
+@dataclass
 class Ant:
-    def __init__(
-        self,
-        graph_api: GraphApi,
-        source: str,
-        destination=None,  # Union[str, List[str], Set[str]]
-        alpha: float = 0.7,
-        beta: float = 0.3,
-        is_fit: bool = False,
-        is_solution_ant: bool = False,
-        mode: int = 0,
-        node_order: Dict = None
-    ):
-        """Initialize the ant with required parameters
-        
-        Args:
-            graph_api: The graph API for accessing the graph
-            source: The source node
-            destination: The destination(s) - can be string, list, or set
-            alpha: Pheromone bias (default 0.7)
-            beta: Edge cost bias (default 0.3)
-            is_fit: Whether the ant has reached all destinations
-            is_solution_ant: Whether this is a solution ant using highest pheromones
-            mode: 0=find any destination, 1=find all destinations
-            node_order: Dict mapping nodes to their original order for tiebreaking
-        """
-        self.graph_api = graph_api
-        self.source = source
-        self.destination = destination if destination is not None else []
-        self.alpha = alpha
-        self.beta = beta
-        self.visited_nodes = set()
-        self.path = []
-        self.path_cost = 0.0
-        self.is_fit = is_fit
-        self.is_solution_ant = is_solution_ant
-        self.visited_destinations = set()
-        self.mode = mode
-        self.node_order = node_order if node_order else {}
-        
-        # Initialize the ant's state
+    graph_api: GraphApi
+    source: str
+    # Change from single string to support multiple destinations
+    destination: Union[str, List[str], Set[str]] = field(default_factory=list)
+    # Pheromone bias
+    alpha: float = 0.7
+    # Edge cost bias
+    beta: float = 0.3
+    # Set of nodes that have been visited by the ant
+    visited_nodes: Set = field(default_factory=set)
+    # Path taken by the ant so far
+    path: List[str] = field(default_factory=list)
+    # Cost of the path taken by the ant so far
+    path_cost: float = 0.0
+    # Indicates if the ant has reached the destination (fit) or not (unfit)
+    is_fit: bool = False
+    # Indicates if the ant is the pheromone-greedy solution ant
+    is_solution_ant: bool = False
+    # Track destinations that have been visited
+    visited_destinations: Set = field(default_factory=set)
+    # Mode to control objection function
+    mode: int = 0
+
+    def __post_init__(self) -> None:
+        # Set the spawn node as the current and first node
         self.current_node = self.source
         self.path.append(self.source)
         
@@ -100,15 +87,8 @@ class Ant:
         visited_set = self.visited_nodes
         
         # Use list comprehension with faster set lookup
-        neighbors = [node for node in self.graph_api.get_neighbors(self.current_node)
-                    if node not in visited_set]
-                    
-        # If node_order is available, use it to sort neighbors
-        if self.node_order:
-            # Sort by original file order when ties need to be broken
-            neighbors.sort(key=lambda x: self.node_order.get(x, float('inf')))
-            
-        return neighbors
+        return [node for node in self.graph_api.get_neighbors(self.current_node)
+                if node not in visited_set]
 
     def _compute_all_edges_desirability(
         self,
@@ -178,18 +158,6 @@ class Ant:
 
         return probabilities
 
-    def _break_ties_by_node_order(self, nodes):
-        """Break ties based on node ordering when probabilities are equal"""
-        if self.node_order:
-            # Use original file order if available
-            return min(nodes, key=lambda x: self.node_order.get(x, float('inf')))
-        
-        # Fallback to numeric ordering if node_order not available
-        try:
-            return min(nodes, key=lambda x: int(x))
-        except ValueError:
-            return min(nodes)  # Lexicographic order for non-numeric
-
     def _choose_next_node(self) -> Union[str, None]:
         """Choose the next node to be visited by the ant
 
@@ -201,41 +169,31 @@ class Ant:
         # Check if ant has no possible nodes to move to
         if len(unvisited_neighbors) == 0:
             # If we reached the destination, it's OK to have no more moves
-            if self.reached_destination():
+            if self.current_node == self.destination:
                 self.is_fit = True
+                return None
+            
             return None
 
         if self.is_solution_ant:
             # The final/solution ant greedily chooses the next node with the highest pheromone value
-            if not unvisited_neighbors:
-                return None
-                
-            # Group neighbors by pheromone value
-            neighbors_by_pheromone = {}
+            best_node = None
+            best_pheromone = -1
+            
             for neighbor in unvisited_neighbors:
                 pheromone = self.graph_api.get_edge_pheromones(self.current_node, neighbor)
-                if pheromone not in neighbors_by_pheromone:
-                    neighbors_by_pheromone[pheromone] = []
-                neighbors_by_pheromone[pheromone].append(neighbor)
-            
-            # Find highest pheromone value
-            best_pheromone = max(neighbors_by_pheromone.keys())
-            
-            # If multiple nodes have same pheromone, break tie by node order
-            tied_nodes = neighbors_by_pheromone[best_pheromone]
-            if len(tied_nodes) > 1:
-                return self._break_ties_by_node_order(tied_nodes)
-            else:
-                return tied_nodes[0]
+                if pheromone > best_pheromone:
+                    best_pheromone = pheromone
+                    best_node = neighbor
+                    
+            return best_node
 
         # For regular ants, use probabilistic selection
         probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
         
         # Check for equal probabilities
-        values = list(probabilities.values())
-        if len(values) > 0 and all(abs(v - values[0]) < 1e-10 for v in values):
-            # All probabilities are equal (within floating point tolerance)
-            return self._break_ties_by_node_order(list(probabilities.keys()))
+        if all(prob == 1.0 / len(unvisited_neighbors) for prob in probabilities.values()):
+            return min(prob for prob in probabilities.keys())
         else:
             # Pick the next node based on the roulette wheel selection technique
             return utils.roulette_wheel_selection(probabilities)
@@ -266,9 +224,6 @@ class Ant:
         # Update visited_destinations if we've reached a destination
         if self.current_node in self.destination_set:
             self.visited_destinations.add(self.current_node)
-            # If mode is 0 (any destination), mark as fit immediately when reaching a destination
-            if self.mode == 0:
-                self.is_fit = True
 
     def deposit_pheromones_on_path(self) -> None:
         """Updates the pheromones along all the edges in the path"""
