@@ -101,9 +101,6 @@ class GraphApi:
             # Draw ALL nodes in the graph
             path_nodes = set(shortest_path)
             all_nodes = list(self.graph.nodes())
-            print(path_nodes)
-            print("-----")
-            print(self.graph.pos)
             
             # Draw non-path nodes first (in the background)
             non_path_nodes = [node for node in all_nodes if node not in path_nodes]
