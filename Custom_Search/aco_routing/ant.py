@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from typing import Dict, List, Set, Union
 import os
 import sys
@@ -11,32 +10,41 @@ sys.path.append(parent_dir)
 from aco_routing import utils
 from aco_routing.graph_api import GraphApi
 
-@dataclass
 class Ant:
-    graph_api: GraphApi
-    source: str
-    # Change from single string to support multiple destinations
-    destination: Union[str, List[str], Set[str]] = field(default_factory=list)
-    # Pheromone bias
-    alpha: float = 0.7
-    # Edge cost bias
-    beta: float = 0.3
-    # Set of nodes that have been visited by the ant
-    visited_nodes: Set = field(default_factory=set)
-    # Path taken by the ant so far
-    path: List[str] = field(default_factory=list)
-    # Cost of the path taken by the ant so far
-    path_cost: float = 0.0
-    # Indicates if the ant has reached the destination (fit) or not (unfit)
-    is_fit: bool = False
-    # Indicates if the ant is the pheromone-greedy solution ant
-    is_solution_ant: bool = False
-    # Track destinations that have been visited
-    visited_destinations: Set = field(default_factory=set)
-    # Mode to control objection function
-    mode: int = 0
-
-    def __post_init__(self) -> None:
+    def __init__(
+        self,
+        graph_api: GraphApi,
+        source: str,
+        destination: Union[str, List[str], Set[str]] = None,
+        alpha: float = 0.7,
+        beta: float = 0.3,
+        is_solution_ant: bool = False,
+        mode: int = 0
+    ):
+        """Initialize an ant for ACO algorithm.
+        
+        Args:
+            graph_api: The graph API to use for navigation
+            source: The starting node
+            destination: The destination node(s) to reach
+            alpha: Pheromone bias (importance of pheromone trails)
+            beta: Edge cost bias (importance of shorter paths)
+            is_solution_ant: Whether this ant is the final solution finder
+            mode: Operation mode (0: any destination, 1: all destinations)
+        """
+        self.graph_api = graph_api
+        self.source = source
+        self.destination = destination if destination is not None else []
+        self.alpha = alpha
+        self.beta = beta
+        self.visited_nodes = set()
+        self.path = []
+        self.path_cost = 0.0
+        self.is_fit = False
+        self.is_solution_ant = is_solution_ant
+        self.visited_destinations = set()
+        self.mode = mode
+        
         # Set the spawn node as the current and first node
         self.current_node = self.source
         self.path.append(self.source)

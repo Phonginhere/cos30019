@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Dict
 import matplotlib.pyplot as plt
 import os
@@ -11,13 +10,17 @@ sys.path.append(parent_dir)
 from aco_routing.network import Network
 
 
-@dataclass
 class GraphApi:
-    graph: Network
-    evaporation_rate: float
-
-    def __post_init__(self):
-        """Initialize data structures for faster access"""
+    def __init__(self, graph: Network, evaporation_rate: float):
+        """Initialize the GraphApi with a network and evaporation rate.
+        
+        Args:
+            graph: Network object containing the graph structure
+            evaporation_rate: Rate at which pheromones evaporate (0-1)
+        """
+        self.graph = graph
+        self.evaporation_rate = evaporation_rate
+        
         # Precompute and cache edge costs
         self._edge_cost_cache = {}
         self._neighbor_cache = {}

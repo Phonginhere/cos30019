@@ -233,7 +233,7 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
-              mode=0, 
+              mode=1, 
               ant_random_spawn=True) # Parallize optimization
 
     try:
@@ -272,6 +272,8 @@ def main():
             print(f"{goal_str} {number_of_nodes}")
             print(f"{path_str}")
             print(f"{aco_cost}")
+            
+            aco.graph_api.visualize_graph(aco_path, aco_cost)
     except Exception as e:
         # Always produce valid output format even on error
         print(f"\"aco_search.py\" CUS2")

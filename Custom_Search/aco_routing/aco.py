@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import random
 from typing import List, Tuple
 import os
@@ -14,37 +13,48 @@ from aco_routing.graph_api import GraphApi
 from aco_routing.network import Network
 
 
-@dataclass
 class ACO:
-    graph: Network
-    # Maximum number of steps an ant is allowed is to take in order to reach the destination
-    ant_max_steps: int
-    # Number of cycles/waves of search ants to be deployed
-    num_iterations: int
-    # Indicates if the search ants should spawn at random nodes in the graph
-    ant_random_spawn: bool = True
-    # Evaporation rate (rho)
-    evaporation_rate: float = 0.1
-    # Pheromone bias
-    alpha: float = 0.7
-    # Edge cost bias
-    beta: float = 0.3
-    # Search ants
-    search_ants: List[Ant] = field(default_factory=list)
-    # Best path found so far
-    best_path: List[str] = field(default_factory=list)
-    # Cost of the best path
-    best_cost: float = float('inf')
-    # mode to control objection function
-    """
-    mode = 0: find 1 from destinations list
-    mode = 1: find all destinations in destinations list
-    """
-    mode: int = 0
-
-    def __post_init__(self):
+    def __init__(
+        self,
+        graph: Network,
+        ant_max_steps: int,
+        num_iterations: int,
+        ant_random_spawn: bool = True,
+        evaporation_rate: float = 0.1,
+        alpha: float = 0.7,
+        beta: float = 0.3,
+        mode: int = 0
+    ):
+        """Initialize the ACO (Ant Colony Optimization) algorithm.
+        
+        Args:
+            graph: Network object containing the graph structure
+            ant_max_steps: Maximum number of steps an ant is allowed to take
+            num_iterations: Number of cycles/waves of search ants to be deployed
+            ant_random_spawn: Indicates if search ants should spawn at random nodes
+            evaporation_rate: Rate at which pheromones evaporate (0-1)
+            alpha: Pheromone bias (importance of pheromone trails)
+            beta: Edge cost bias (importance of shorter paths)
+            mode: Search mode (0: find any destination, 1: find all destinations)
+        """
+        # Store all parameters
+        self.graph = graph
+        self.ant_max_steps = ant_max_steps
+        self.num_iterations = num_iterations
+        self.ant_random_spawn = ant_random_spawn
+        self.evaporation_rate = evaporation_rate
+        self.alpha = alpha
+        self.beta = beta
+        self.mode = mode
+        
+        # Initialize other fields
+        self.search_ants = []
+        self.best_path = []
+        self.best_cost = float('inf')
+        
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
+        
         # Initialize all edges of the graph with a pheromone value of 1.0
         for u, v in self.graph.get_edges():
             self.graph_api.set_edge_pheromones(u, v, 1.0)
