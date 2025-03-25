@@ -59,7 +59,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # Scale parameters based on graph properties
     # Adjust ant_max_steps based on diameter and density
     if graph_density < 0.2:  # Very sparse graph
-        ant_max_steps = int(min(1000, 5 * diameter_estimate * node_count))
+        ant_max_steps = int(min(1000, 10 * diameter_estimate * node_count))
     elif graph_density > 0.7:  # Very dense graph
         ant_max_steps = int(min(500, 2 * diameter_estimate))
     else:  # Medium density
@@ -71,11 +71,11 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     else:
         complexity_factor = 1.0
         
-    iterations = int(min(500, complexity_factor * 30 * (0.5 * node_count + 0.3 * edge_count)))
+    iterations = int(min(500, complexity_factor * 30 * (1 * node_count + 0.3 * edge_count)))
     
     # Scale num_ants based on node count and edge diversity
     unique_edge_weights = len(set(weight for (_, _), weight in edges.items())) # Number of different value in edges
-    num_ants = int(min(300, max(10, 2 * node_count + 2 * unique_edge_weights * len(destinations))))
+    num_ants = int(min(300, max(10, 4 * node_count + 2 * unique_edge_weights * len(destinations))))
     
     # Apply minimum values to ensure algorithm works on small graphs
     ant_max_steps = max(20, ant_max_steps)
@@ -129,9 +129,9 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # ALPHA (pheromone importance) optimization
     # Higher for more complex graphs where historical paths matter
     # Lower for simpler graphs where greedy approaches work well
-    if node_count > 50 or len(destinations) > 5:
+    if node_count > 25 or len(destinations) > 5:
         alpha = 1.5  # Rely more on pheromones for complex problems
-    elif node_count < 20 and len(destinations) <= 2:
+    elif node_count < 10 and len(destinations) <= 2:
         alpha = 0.8  # Less pheromone influence for simple problems
     else:
         alpha = 1.0  # Balanced approach
@@ -210,13 +210,15 @@ def main():
     G = Network()
     
     # Pre-allocate graph memory
-    G.graph = {node: [] for node in nodes}
-    
-    # Add edges efficiently
+    # Convert all nodes to strings first to ensure consistency
+    string_nodes = [str(node) for node in nodes]
+    G.graph = {node: [] for node in string_nodes}
+
+    # Add edges efficiently with consistent string conversion
     for (start, end), weight in edges.items():
         # Ensure nodes are strings
-        start_str = str(start) if isinstance(start, int) else start
-        end_str = str(end) if isinstance(end, int) else end
+        start_str = str(start)
+        end_str = str(end)
         G.add_edge(start_str, end_str, cost=float(weight))
 
     # Calculate adaptive parameters
