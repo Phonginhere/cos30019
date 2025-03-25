@@ -1,4 +1,0 @@
-Metadata-Version: 2.1
-Name: dfs_routing
-Version: 0.1.0
-Requires-Dist: networkx>=2.5

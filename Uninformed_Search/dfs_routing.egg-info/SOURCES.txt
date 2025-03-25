@@ -1,9 +1,0 @@
-setup.py
-dfs_routing/__init__.py
-dfs_routing/dfs.py
-dfs_routing/graph_api.py
-dfs_routing.egg-info/PKG-INFO
-dfs_routing.egg-info/SOURCES.txt
-dfs_routing.egg-info/dependency_links.txt
-dfs_routing.egg-info/requires.txt
-dfs_routing.egg-info/top_level.txt
