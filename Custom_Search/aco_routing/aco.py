@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import random
 from typing import List, Tuple
 import os
@@ -14,42 +13,43 @@ from aco_routing.graph_api import GraphApi
 from aco_routing.network import Network
 
 
-@dataclass
 class ACO:
-    graph: Network
-    # Maximum number of steps an ant is allowed is to take in order to reach the destination
-    ant_max_steps: int
-    # Number of cycles/waves of search ants to be deployed
-    num_iterations: int
-    # Indicates if the search ants should spawn at random nodes in the graph
-    ant_random_spawn: bool = True
-    # Evaporation rate (rho)
-    evaporation_rate: float = 0.1
-    # Pheromone bias
-    alpha: float = 0.7
-    # Edge cost bias
-    beta: float = 0.3
-    # Search ants
-    search_ants: List[Ant] = field(default_factory=list)
-    # Best path found so far
-    best_path: List[str] = field(default_factory=list)
-    # Cost of the best path
-    best_cost: float = float('inf')
-    # mode to control objection function
     """
-    mode = 0: find 1 from destinations list
-    mode = 1: find all destinations in destinations list
+    Ant Colony Optimization algorithm for pathfinding in networks
     """
-    mode: int = 0
-
-    def __post_init__(self):
+    def __init__(
+        self,
+        graph,
+        ant_max_steps,
+        num_iterations,
+        ant_random_spawn=True,
+        evaporation_rate=0.1,
+        alpha=0.7,
+        beta=0.3,
+        mode=0,  # 0: find 1 from destinations, 1: find all destinations
+        node_order=None  # Optional parameter to control node selection order
+    ):
+        """Initialize the ACO algorithm with the given parameters"""
+        self.graph = graph
+        self.ant_max_steps = ant_max_steps
+        self.num_iterations = num_iterations
+        self.ant_random_spawn = ant_random_spawn
+        self.evaporation_rate = evaporation_rate
+        self.alpha = alpha
+        self.beta = beta
+        self.search_ants = []
+        self.best_path = []
+        self.best_cost = float('inf')
+        self.mode = mode
+        self.node_order = node_order if node_order else {}
+        
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
         # Initialize all edges of the graph with a pheromone value of 1.0
         for u, v in self.graph.get_edges():
             self.graph_api.set_edge_pheromones(u, v, 1.0)
 
-    def _deploy_forward_search_ants(self) -> None:
+    def _deploy_forward_search_ants(self):
         """Deploy ants in batches for better cache locality"""
         batch_size = 25  # Process ants in batches for better cache efficiency
         
@@ -66,7 +66,7 @@ class ACO:
                 if ant.reached_destination():
                     ant.is_fit = True
 
-    def _deploy_backward_search_ants(self) -> None:
+    def _deploy_backward_search_ants(self):
         """Deploy fit search ants back towards their source node while dropping pheromones on the path"""
         for ant in self.search_ants:
             if ant.is_fit:
@@ -78,7 +78,7 @@ class ACO:
                     self.best_path = ant.path.copy()
                     self.best_cost = ant.path_cost
 
-    def _deploy_search_ants(self, source: str, destination: str, num_ants: int) -> None:
+    def _deploy_search_ants(self, source, destination, num_ants):
         """Deploy search ants with early stopping for faster convergence"""
         # Reset best path tracking
         self.best_path = []
@@ -104,7 +104,7 @@ class ACO:
                     destination,
                     alpha=self.alpha,
                     beta=self.beta,
-                    mode=self.mode
+                    mode=self.mode,
                 )
                 self.search_ants.append(ant)
 
@@ -133,17 +133,17 @@ class ACO:
             if no_improvement_count >= no_improvement_limit:
                 break  # Stop early if converged
 
-    def _deploy_solution_ant(self, source: str, destination: str) -> Ant:
+    def _deploy_solution_ant(self, source, destination):
         """Deploy the pheromone-greedy solution to find the shortest path
-
+        
         Args:
             source (str): The source node in the graph
             destination (str): The destination node in the graph
-
+            
         Returns:
             Ant: The solution ant with the computed shortest path and cost
         """
-        # Otherwise, create a new solution ant
+        # Create a new solution ant
         ant = Ant(
             self.graph_api,
             source,
@@ -151,7 +151,7 @@ class ACO:
             is_solution_ant=True,
             # Use higher beta for solution ant to favor shorter paths
             beta=max(self.beta * 2, 3.0),
-            mode=self.mode
+            mode=self.mode,
         )
         
         steps = 0
@@ -166,19 +166,14 @@ class ACO:
             
         return ant
 
-    def find_path_with_single_destination(
-        self,
-        source: str,
-        destination: str,
-        num_ants: int,
-    ) -> Tuple[List[str], float]:
+    def find_path_with_single_destination(self, source, destination, num_ants):
         """Finds the shortest path from the source to the destination in the graph
-
+        
         Args:
             source (str): The source node in the graph
             destination (str): The destination node in the graph
             num_ants (int): The number of search ants to be deployed
-
+            
         Returns:
             List[str]: The shortest path found by the ants
             float: The cost of the computed shortest path
@@ -198,7 +193,7 @@ class ACO:
         solution_ant = self._deploy_solution_ant(source, destination)
         return solution_ant.path, solution_ant.path_cost
 
-    def find_path_with_multiple_destinations(self, source: str, destinations: List[str], num_ants: int = 100) -> Tuple[List[str], float]:
+    def find_path_with_multiple_destinations(self, source, destinations, num_ants=100):
         """Find the shortest path that visits all destinations in any order.
         
         Args:
@@ -227,7 +222,7 @@ class ACO:
                 destination=destination_set,  # Pass the set of destinations
                 alpha=self.alpha,
                 beta=self.beta,
-                mode=self.mode
+                mode=self.mode,
             )
             self.search_ants.append(ant)
         

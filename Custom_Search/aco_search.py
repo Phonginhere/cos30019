@@ -2,31 +2,13 @@ import os
 import sys
 import traceback
 
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(parent_dir)
-
 from aco_routing.aco import ACO
 from aco_routing.network import Network
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 
-try:
-    from parser import parse_graph_file
-except ImportError:
-    # Handle the case where the parser module isn't available
-    def parse_graph_file(file_path):
-        # Simplified example parser
-        nodes = ['1', '2', '3', '4', '5']
-        edges = {
-            ('1', '2'): 1, 
-            ('2', '3'): 2, 
-            ('3', '4'): 1,
-            ('4', '5'): 3,
-            ('1', '5'): 10,  
-            ('2', '5'): 8    
-        }
-        return nodes, edges, '1', ['5']
+from parser import parse_graph_file
 
 def calculate_adaptive_parameters(graph, destinations, edges):
     """
@@ -233,7 +215,7 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
-              mode=0, 
+              mode=0, #control the mode of objection function
               ant_random_spawn=True) # Parallize optimization
 
     try:
@@ -272,6 +254,9 @@ def main():
             print(f"{goal_str} {number_of_nodes}")
             print(f"{path_str}")
             print(f"{aco_cost}")
+
+            aco.graph_api.visualize_graph(aco_path)
+
     except Exception as e:
         # Always produce valid output format even on error
         print(f"\"aco_search.py\" CUS2")

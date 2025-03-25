@@ -42,9 +42,6 @@ class GraphApi:
             pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
             new_pheromone = (1 - self.evaporation_rate) * pheromones + pheromone_amount
             self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
-            # Debugging large changes in pheromones
-            if pheromone_amount > 1.0:
-                print(f"Large pheromone deposit on edge {u}->{v}: +{pheromone_amount}")
 
     def get_edge_cost(self, u: str, v: str) -> float:
         """Get edge cost with caching for better performance"""
@@ -83,6 +80,7 @@ class GraphApi:
         """
         try:
             import matplotlib.pyplot as plt
+            import numpy as np
             
             # Ensure all nodes in the path are strings
             shortest_path = [str(node) for node in shortest_path]
@@ -116,7 +114,52 @@ class GraphApi:
             path_ys = [pos[node][1] for node in path_nodes if node in pos]
             plt.scatter(path_xs, path_ys, s=900, c='lightcoral', edgecolors='black', zorder=2)
             
-            # Draw only the edges that are in the path
+            # FIRST draw ALL edges with low opacity
+            for u, v in self.graph.get_edges():
+                # Skip if either node position is missing
+                if str(u) not in pos or str(v) not in pos:
+                    continue
+                    
+                x1, y1 = pos[str(u)]
+                x2, y2 = pos[str(v)]
+                
+                # Draw unused edge with low opacity
+                plt.plot([x1, x2], [y1, y2], color='grey', linewidth=1.5, alpha=0.3, zorder=0)
+                
+                # Add small arrow to show direction
+                dx = x2 - x1
+                dy = y2 - y1
+                length = np.sqrt(dx**2 + dy**2)
+                dx, dy = dx/length, dy/length  # Normalize
+                
+                plt.arrow(
+                    x1 + 0.8*dx*length, y1 + 0.8*dy*length, 
+                    0.05*dx*length, 0.05*dy*length, 
+                    head_width=0.03, 
+                    head_length=0.05, 
+                    fc='grey', ec='grey',
+                    alpha=0.3,
+                    zorder=0
+                )
+                
+                # Add faded edge cost label closer to the arrow head
+                # Position the label at 75% along the edge (closer to target)
+                label_x = x1 + 0.75 * dx * length
+                label_y = y1 + 0.75 * dy * length
+                
+                # Try to get the edge data
+                edge_data = self.graph.edges.get((u, v), None)
+                if not edge_data:
+                    edge_data = self.graph.edges.get((str(u), str(v)), None)
+                
+                if edge_data:
+                    cost = edge_data.get("cost", 0)
+                    plt.text(label_x, label_y, f"{cost}", fontsize=10, alpha=0.3,
+                            bbox=dict(facecolor='white', alpha=0.2, edgecolor='lightgrey'),
+                            ha='center', va='center',  # Center the text
+                            zorder=0)
+            
+            # THEN draw the path edges on top with high visibility
             for i in range(len(shortest_path) - 1):
                 u, v = shortest_path[i], shortest_path[i + 1]
                 
@@ -133,17 +176,32 @@ class GraphApi:
                 # Add arrow to show direction
                 dx = x2 - x1
                 dy = y2 - y1
+                length = np.sqrt(dx**2 + dy**2)
+                dx, dy = dx/length, dy/length  # Normalize
+                
+                # Arrow position
+                arrow_x = x1 + 0.8*dx*length
+                arrow_y = y1 + 0.8*dy*length
+                
                 plt.arrow(
-                    x1 + 0.8*dx, y1 + 0.8*dy, 
-                    0.1*dx, 0.1*dy, 
+                    arrow_x, arrow_y, 
+                    0.1*dx*length, 0.1*dy*length, 
                     head_width=0.05, 
                     head_length=0.1, 
                     fc='red', ec='red',
                     zorder=4
                 )
                 
-                # Add edge label with ONLY cost (no pheromones)
-                midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
+                # Add edge label closer to the head of the arrow
+                # Position label at 80% along the edge
+                label_x = x1 + 0.8 * dx * length
+                label_y = y1 + 0.8 * dy * length
+                
+                # Offset the label slightly to avoid overlapping with the arrow
+                offset = 0.05
+                # Perpendicular offset to avoid overlapping the edge
+                label_x += offset * (-dy)  # Perpendicular to edge direction
+                label_y += offset * dx     # Perpendicular to edge direction
                 
                 # Try both string and original forms of edge for lookup
                 edge_data = None
@@ -161,8 +219,9 @@ class GraphApi:
                 if edge_data:
                     cost = edge_data.get("cost", 0)
                     label = f"cost: {cost}"
-                    plt.text(midx, midy, label, fontsize=12, fontweight='bold',
+                    plt.text(label_x, label_y, label, fontsize=12, fontweight='bold',
                             bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
+                            ha='center', va='center',  # Center the text
                             zorder=5)
             
             # Add node labels for ALL nodes
@@ -189,7 +248,8 @@ class GraphApi:
             # Add a legend
             from matplotlib.lines import Line2D
             legend_elements = [
-                Line2D([0], [0], color='red', lw=3, label='Path'),
+                Line2D([0], [0], color='red', lw=3, label='Path edge'),
+                Line2D([0], [0], color='grey', lw=1.5, alpha=0.3, label='Unused edge'),
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='lightcoral', 
                     markersize=15, label='Path node'),
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', 
