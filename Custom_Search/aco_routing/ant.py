@@ -193,7 +193,6 @@ class Ant:
         
         # Check for equal probabilities
         if all(prob == 1.0 / len(unvisited_neighbors) for prob in probabilities.values()):
-            print(min(prob for prob in probabilities.keys()))
             return min(prob for prob in probabilities.keys())
         else:
             # Pick the next node based on the roulette wheel selection technique
