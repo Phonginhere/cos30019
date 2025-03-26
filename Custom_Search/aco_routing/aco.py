@@ -23,8 +23,7 @@ class ACO:
         evaporation_rate: float = 0.1,
         alpha: float = 0.7,
         beta: float = 0.3,
-        mode: int = 0,
-        min_scaling_factor: float = 0.1
+        mode: int = 0
     ):
         """Initialize the ACO (Ant Colony Optimization) algorithm.
         
@@ -47,7 +46,6 @@ class ACO:
         self.alpha = alpha
         self.beta = beta
         self.mode = mode
-        self.min_scaling_factor = min_scaling_factor
         
         # Initialize other fields
         self.search_ants = []
@@ -61,7 +59,7 @@ class ACO:
         for u, v in self.graph.get_edges():
             self.graph_api.set_edge_pheromones(u, v, 1.0)
 
-    def _deploy_forward_search_ants(self, step: int, num_ants: int) -> None:
+    def _deploy_forward_search_ants(self) -> None:
         for ant in self.search_ants:
             step_count = 0
             # Process each ant until it reaches destination or max steps
@@ -69,28 +67,16 @@ class ACO:
                 ant.take_step()
                 step_count += 1
             
-            # Max Min Ant System (MMAS) pheromone update
-            if float(step) / float(self.num_iterations) < 0.75: # Both local and global best can update pheromones
-                if ant.reached_destination():
-                    ant.is_fit = True
-                    ant.deposit_pheromones_on_path(elitist_param = 0) # Local pheromone update no elitist
-                    
-                    if ant.path_cost < self.best_path_cost:
-                        self.best_path = ant.path.copy()
-                        self.best_path_cost = ant.path_cost
-                        
-                        ant.deposit_pheromones_on_path(elitist_param = 1) # Elitist pheromone update
-                    max_pheromone = num_ants * ant.pheromone_deposit_weight/ant.path_cost
+            if ant.reached_destination():
+                ant.is_fit = True
+                ant.deposit_pheromones_on_path(elitist_param = 0) # Local pheromone update no elitist
                 
-            else: # Global best pheromone update only
-                if ant.reached_destination() and ant.path_cost < self.best_path_cost:
-                    ant.is_fit = True
+                if ant.path_cost < self.best_path_cost:
                     self.best_path = ant.path.copy()
                     self.best_path_cost = ant.path_cost
+                    
                     ant.deposit_pheromones_on_path(elitist_param = 1) # Elitist pheromone update
-                    max_pheromone = num_ants *  ant.pheromone_deposit_weight/ant.path_cost
-        min_pheromone = self.min_scaling_factor * max_pheromone
-        return max_pheromone, min_pheromone
+                    
     # def _deploy_backward_search_ants(self) -> None:
     #     pass
 
@@ -100,7 +86,7 @@ class ACO:
             self.search_ants.clear()
             
             # Create new ants (only create what we need)
-            for step in range(num_ants):
+            for _ in range(num_ants):
                 spawn_point = source
                 if self.ant_random_spawn:
                     spawn_point = random.choice(list(self.graph.nodes()))
@@ -116,11 +102,11 @@ class ACO:
                 self.search_ants.append(ant)
 
             # Deploy ants
-            max_pheromon, min_pheromon =self._deploy_forward_search_ants(step, num_ants)
+            self._deploy_forward_search_ants()
             # self._deploy_backward_search_ants()        
             
             # Evaporate pheromones after each iteration
-            self.graph_api.update_pheromones(max_pheromon, min_pheromon) #Global pheromone update
+            self.graph_api.evaporate_pheromones() #Global pheromone update
 
     def _deploy_solution_ant(self, source: str, destination: str) -> Ant:
         """Deploy the pheromone-greedy solution to find the shortest path
