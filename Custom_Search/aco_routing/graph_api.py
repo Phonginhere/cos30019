@@ -40,11 +40,20 @@ class GraphApi:
     def get_edge_pheromones(self, u: str, v: str) -> float:
         return self.graph.edges.get((u, v), {}).get("pheromones", 0.0)
 
-    def deposit_pheromones(self, u: str, v: str, pheromone_amount: float) -> None:
+    def deposit_pheromones(self, u: str, v: str, pheromone_amount: float, elitist_param: float) -> None:
         if (u, v) in self.graph.edges:
             pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
-            new_pheromone = (1 - self.evaporation_rate) * pheromones + pheromone_amount
+            new_pheromone = pheromones + pheromone_amount + elitist_param
             self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
+            
+    def update_pheromones(self, max_pheromon, min_pheromon) -> None:
+        """Evaporate pheromones on all edges of the graph."""
+        for u, v in self.graph.get_edges():
+            if (u, v) in self.graph.edges:
+                pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
+                new_pheromone = (1 - self.evaporation_rate) * pheromones
+                new_pheromone = min(max_pheromon,new_pheromone)
+                self.graph.edges[(u, v)]["pheromones"] = max(min_pheromon, self.graph.edges[(u, v)]["pheromones"])
 
     def get_edge_cost(self, u: str, v: str) -> float:
         """Get edge cost with caching for better performance"""
@@ -82,7 +91,6 @@ class GraphApi:
             shortest_path_cost: The cost of the shortest path (optional)
         """
         try:
-            
             # Create a figure with a specific size
             plt.figure(figsize=(12, 10))
             
@@ -108,7 +116,14 @@ class GraphApi:
             
             # Draw all edges in the graph with low opacity
             for u, v in self.graph.get_edges():
-                
+                # Skip if this is a path edge (will be drawn later)
+                if (u, v) in path_edges:
+                    continue
+                    
+                # Skip if either node position is missing
+                if u not in self.graph.pos or v not in self.graph.pos:
+                    continue
+                    
                 x1, y1 = self.graph.pos[u]
                 x2, y2 = self.graph.pos[v]
                 
@@ -127,20 +142,20 @@ class GraphApi:
                     zorder=0
                 )
                 
-                # Add faded edge label for cost, cost will closer with their arrow of direction
+                # Add faded edge label for BOTH cost AND pheromone
                 label_x, label_y = x1 + 0.75*dx, y1 + 0.75*dy
                 
                 edge_data = self.graph.edges.get((u, v), None)
                 if edge_data:
                     cost = edge_data.get("cost", 0)
                     pheromone = edge_data.get("pheromones", 0)
-                    label = f"cost: {cost}\npheromone: {round(pheromone, 2)}"
-                    plt.text(label_x, label_y, f"{cost}", fontsize=10, alpha=0.3,
-                            bbox=dict(facecolor='white', alpha=0.2, edgecolor='lightgrey'),
+                    # Changed to display both cost and pheromone
+                    label = f"c:{cost}\np:{round(pheromone, 3)}"
+                    plt.text(label_x, label_y, label, fontsize=8, alpha=0.5,
+                            bbox=dict(facecolor='white', alpha=0.4, edgecolor='lightgrey'),
                             ha='center', va='center',  # Center the text
                             zorder=0)
                     
-            
             # Draw only the edges that are in the path
             for i in range(len(shortest_path) - 1):
                 u, v = shortest_path[i], shortest_path[i + 1]
@@ -181,8 +196,8 @@ class GraphApi:
                 if edge_data:
                     cost = edge_data.get("cost", 0)
                     pheromone = edge_data.get("pheromones", 0)
-                    label = f"cost: {cost}\npheromone: {round(pheromone, 2)}"
-                    plt.text(midx, midy, label, fontsize=7, fontweight='bold',
+                    label = f"cost: {cost}\nphero: {round(pheromone, 3)}"
+                    plt.text(midx, midy, label, fontsize=8, fontweight='bold',
                             bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
                             zorder=5, ha='center', va='center')
             
@@ -206,7 +221,7 @@ class GraphApi:
             cost_str = f", Cost: {shortest_path_cost}" if shortest_path_cost is not None else ""
             plt.title(f"Shortest Path: {path_str}{cost_str}", fontsize=14)
             
-            # Add a legend
+            # Add a legend with pheromone info
             from matplotlib.lines import Line2D
             legend_elements = [
                 Line2D([0], [0], color='red', lw=3, label='Path'),
@@ -214,6 +229,7 @@ class GraphApi:
                     markersize=15, label='Path node'),
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', 
                     markersize=15, label='Unused node'),
+                Line2D([0], [0], color='gray', lw=2, alpha=0.3, label='Unused edge'),
             ]
             plt.legend(handles=legend_elements, loc='upper right')
             
@@ -227,4 +243,3 @@ class GraphApi:
             import traceback
             print(f"Detailed visualization error: {e}")
             traceback.print_exc()
-        

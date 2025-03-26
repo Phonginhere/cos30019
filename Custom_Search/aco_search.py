@@ -46,9 +46,9 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     if graph_density < 0.2:  # Very sparse graph
         ant_max_steps = int(min(1000, 100 * diameter_estimate * node_count))
     elif graph_density > 0.7:  # Very dense graph
-        ant_max_steps = int(min(500, 20 * diameter_estimate))
+        ant_max_steps = int(min(500, 70 * diameter_estimate))
     else:  # Medium density
-        ant_max_steps = int(min(800, 30 * diameter_estimate))
+        ant_max_steps = int(min(800, 40 * diameter_estimate))
     
     # Scale iterations based on problem complexity
     if len(destinations) > 1:  # Multiple destinations is harder
@@ -109,11 +109,11 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # Higher for more complex graphs where historical paths matter
     # Lower for simpler graphs where greedy approaches work well
     if node_count > 25 or len(destinations) > 5:
-        alpha = 1.5  # Rely more on pheromones for complex problems
+        alpha = 1  # Rely more on pheromones for complex problems
     elif node_count < 10 and len(destinations) <= 2:
-        alpha = 0.8  # Less pheromone influence for simple problems
+        alpha = 0.3  # Less pheromone influence for simple problems
     else:
-        alpha = 1.0  # Balanced approach
+        alpha = 0.5  # Balanced approach
         
     # Adjust for past success (would need tracking between runs)
     # This is simplified here
@@ -124,11 +124,11 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # Higher for graphs with significant weight differences
     # Lower for graphs with uniform weights
     if weight_range > 10 * min(weights) if weights and min(weights) > 0 else False:
-        beta = 2.0  # High weight variance - rely more on heuristic
+        beta = 1  # High weight variance - rely more on heuristic
     elif weight_uniformity > 0.7:  # Very uniform weights
-        beta = 0.8  # Heuristic provides less useful information
+        beta = 0.3  # Heuristic provides less useful information
     else:
-        beta = 1.5  # Balanced approach
+        beta = 0.5  # Balanced approach
     
     # Special cases
     if len(destinations) == 1 and node_count > 30:
@@ -182,46 +182,35 @@ def main():
               alpha=alpha, 
               beta=beta, 
               mode=1, 
-              ant_random_spawn=True) # Parallize optimization
+              ant_random_spawn=False) # Parallize optimization not really useful for starting from a single node and reach multiple destinations
 
-    try:
-        aco_path, aco_cost = aco.find_shortest_path(
-            source=origin,
-            destination=destinations,
-            num_ants=num_ants
-        )
-        
-        # Output results
-        if not aco_path:
-            # No path found but no exception thrown
-            print(f"\"aco_search.py\" CUS2")
-            print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
-            print("No path found")
-            print("0.0")
-        else:
-            # Normal output
-            aco_path = [node for node in aco_path]
-            goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
-            number_of_nodes = G.number_of_nodes()
-            path_str = " ".join(aco_path)
-            
-            print(f"\"aco_search.py\" CUS2")
-            print(f"{goal_str} {number_of_nodes}")
-            print(f"{path_str}")
-            print(f"{aco_cost}")
-            
-            aco.graph_api.visualize_graph(aco_path, aco_cost)
-            
-    except Exception as e:
-        # Always produce valid output format even on error
+    aco_path, aco_cost = aco.find_shortest_path(
+        source=origin,
+        destination=destinations,
+        num_ants=num_ants
+    )
+    
+    # Output results
+    if not aco_path:
+        # No path found but no exception thrown
         print(f"\"aco_search.py\" CUS2")
         print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
-        print(f"No path found: {str(e).split('.')[0]}")  # First sentence of error only
+        print("No path found")
         print("0.0")
+    else:
+        # Normal output
+        aco_path = [node for node in aco_path]
+        goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
+        number_of_nodes = G.number_of_nodes()
+        path_str = " ".join(aco_path)
         
-        # Print detailed error info to stderr for debugging
-        print(f"Error finding path: {e}", file=sys.stderr)
-        traceback.print_exc()
+        print(f"\"aco_search.py\" CUS2")
+        print(f"{goal_str} {number_of_nodes}")
+        print(f"{path_str}")
+        print(f"{aco_cost}")
+        
+        aco.graph_api.visualize_graph(aco_path, aco_cost)
+            
 
 if __name__ == "__main__":
     main()
