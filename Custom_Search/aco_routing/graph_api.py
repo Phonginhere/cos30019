@@ -45,9 +45,6 @@ class GraphApi:
             pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
             new_pheromone = (1 - self.evaporation_rate) * pheromones + pheromone_amount
             self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
-            # Debugging large changes in pheromones
-            if pheromone_amount > 1.0:
-                print(f"Large pheromone deposit on edge {u}->{v}: +{pheromone_amount}")
 
     def get_edge_cost(self, u: str, v: str) -> float:
         """Get edge cost with caching for better performance"""
@@ -222,9 +219,6 @@ class GraphApi:
             
             # Adjust layout
             plt.tight_layout()
-            
-            plt.xlim(0, 12)  # Set x-axis range from 0 to 12
-            plt.ylim(0, 12)  # Set y-axis range from 0 to 12
             
             # Show the plot
             plt.show()

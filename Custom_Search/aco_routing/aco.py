@@ -49,8 +49,6 @@ class ACO:
         
         # Initialize other fields
         self.search_ants = []
-        self.best_path = []
-        self.best_cost = float('inf')
         
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
@@ -60,21 +58,15 @@ class ACO:
             self.graph_api.set_edge_pheromones(u, v, 1.0)
 
     def _deploy_forward_search_ants(self) -> None:
-        """Deploy ants in batches for better cache locality"""
-        batch_size = 25  # Process ants in batches for better cache efficiency
-        
-        for i in range(0, len(self.search_ants), batch_size):
-            batch = self.search_ants[i:i+batch_size]
-            
-            for ant in batch:
-                step_count = 0
-                # Process each ant until it reaches destination or max steps
-                while not ant.reached_destination() and step_count < self.ant_max_steps:
-                    ant.take_step()
-                    step_count += 1
-                    
-                if ant.reached_destination():
-                    ant.is_fit = True
+        for ant in self.search_ants:
+            step_count = 0
+            # Process each ant until it reaches destination or max steps
+            while not ant.reached_destination() and step_count < self.ant_max_steps:
+                ant.take_step()
+                step_count += 1
+                
+            if ant.reached_destination():
+                ant.is_fit = True
 
     def _deploy_backward_search_ants(self) -> None:
         """Deploy fit search ants back towards their source node while dropping pheromones on the path"""
@@ -82,22 +74,8 @@ class ACO:
             if ant.is_fit:
                 # Add extra deposit for shorter paths
                 ant.deposit_pheromones_on_path()
-                
-                # Update best path if this one is better
-                if ant.path_cost < self.best_cost:
-                    self.best_path = ant.path.copy()
-                    self.best_cost = ant.path_cost
 
     def _deploy_search_ants(self, source: str, destination: str, num_ants: int) -> None:
-        """Deploy search ants with early stopping for faster convergence"""
-        # Reset best path tracking
-        self.best_path = []
-        self.best_cost = float('inf')
-        
-        # Early stopping parameters
-        no_improvement_limit = 20
-        no_improvement_count = 0
-        
         for iteration in range(self.num_iterations):
             # Clear previous ants
             self.search_ants.clear()
@@ -120,28 +98,7 @@ class ACO:
 
             # Deploy ants
             self._deploy_forward_search_ants()
-            self._deploy_backward_search_ants()
-            
-            # Check if we found better solutions
-            best_ant_this_iteration = None
-            best_cost_this_iteration = float('inf')
-            
-            for ant in self.search_ants:
-                if ant.is_fit and ant.path_cost < best_cost_this_iteration:
-                    best_ant_this_iteration = ant
-                    best_cost_this_iteration = ant.path_cost
-            
-            # Update global best if better
-            if best_ant_this_iteration is not None and best_cost_this_iteration < self.best_cost:
-                self.best_path = best_ant_this_iteration.path.copy()
-                self.best_cost = best_cost_this_iteration
-                no_improvement_count = 0
-            else:
-                no_improvement_count += 1
-            
-            # Early stopping if no improvement for several iterations
-            if no_improvement_count >= no_improvement_limit:
-                break  # Stop early if converged
+            self._deploy_backward_search_ants()           
 
     def _deploy_solution_ant(self, source: str, destination: str) -> Ant:
         """Deploy the pheromone-greedy solution to find the shortest path
@@ -160,7 +117,8 @@ class ACO:
             destination,
             is_solution_ant=True,
             # Use higher beta for solution ant to favor shorter paths
-            beta=max(self.beta * 2, 3.0),
+            beta=self.beta * 2,
+            alpha=self.alpha,
             mode=self.mode
         )
         
@@ -176,7 +134,7 @@ class ACO:
             
         return ant
 
-    def find_path_with_single_destination(
+    def find_shortest_path(
         self,
         source: str,
         destination: str,
@@ -196,8 +154,9 @@ class ACO:
         # Verify the graph has the required nodes
         if source not in self.graph.nodes():
             raise ValueError(f"Source node {source} not in graph")
-        if destination not in self.graph.nodes():
-            raise ValueError(f"Destination node {destination} not in graph")
+        for dest in destination:
+            if dest not in self.graph.nodes():
+                raise ValueError(f"Destination node {dest} not in graph")
         
         # Do the actual search
         self._deploy_search_ants(
@@ -205,60 +164,6 @@ class ACO:
             destination,
             num_ants,
         )
+        
         solution_ant = self._deploy_solution_ant(source, destination)
         return solution_ant.path, solution_ant.path_cost
-
-    def find_path_with_multiple_destinations(self, source: str, destinations: List[str], num_ants: int = 100) -> Tuple[List[str], float]:
-        """Find the shortest path that visits all destinations in any order.
-        
-        Args:
-            source: The starting node
-            destinations: List of destination nodes to visit (in any order)
-            num_ants: The number of ants to use
-        
-        Returns:
-            Tuple[List[str], float]: A tuple containing the path and its cost
-        """
-        # Create a set of destinations for efficient lookups
-        destination_set = set(destinations)
-        
-        # Reset best path tracking
-        self.best_path = []
-        self.best_cost = float('inf')
-        
-        # Deploy ants that target all destinations at once
-        self.search_ants.clear()
-        
-        for _ in range(num_ants):
-            # Create an ant that targets all destinations
-            ant = Ant(
-                self.graph_api,
-                source,
-                destination=destination_set,  # Pass the set of destinations
-                alpha=self.alpha,
-                beta=self.beta,
-                mode=self.mode
-            )
-            self.search_ants.append(ant)
-        
-        # Run for a number of iterations
-        for iteration in range(self.num_iterations):
-            # Deploy ants
-            self._deploy_forward_search_ants()
-            self._deploy_backward_search_ants()
-            
-            # Find the best ant
-            fit_ants = [ant for ant in self.search_ants if ant.is_fit]
-            
-            if fit_ants:
-                best_ant = min(fit_ants, key=lambda ant: ant.path_cost)
-                
-                if best_ant.path_cost < self.best_cost:
-                    self.best_path = best_ant.path.copy()
-                    self.best_cost = best_ant.path_cost
-        
-        # If we didn't find a path, raise an exception
-        if not self.best_path:
-            raise ValueError(f"Could not find a path from {source} that visits all destinations: {destinations}")
-        
-        return self.best_path, self.best_cost

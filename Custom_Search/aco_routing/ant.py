@@ -48,18 +48,10 @@ class Ant:
         # Set the spawn node as the current and first node
         self.current_node = self.source
         self.path.append(self.source)
-        
-        # Convert destination to set for efficient lookups
-        if isinstance(self.destination, str):
-            self.destination_set = {self.destination}
-        elif isinstance(self.destination, list):
-            self.destination_set = set(self.destination)
-        else:
-            self.destination_set = self.destination
             
         # Initialize visited destinations
         self.visited_destinations = set()
-        if self.current_node in self.destination_set:
+        if self.current_node in self.destination:
             self.visited_destinations.add(self.current_node)
 
     def reached_destination(self) -> bool:
@@ -71,23 +63,16 @@ class Ant:
         Returns:
             bool: True if all destinations have been reached
         """
-        if not hasattr(self, 'destination_set'):
-            # Handle legacy code where destination might be a string
-            if isinstance(self.destination, str):
-                return self.current_node == self.destination
-            else:
-                self.destination_set = set(self.destination) if isinstance(self.destination, list) else self.destination
-                self.visited_destinations = set()
                 
         # Update visited destinations
-        if self.current_node in self.destination_set:
+        if self.current_node in self.destination:
             self.visited_destinations.add(self.current_node)
             
         # Check if all destinations have been visited
         if self.mode == 0:
             return len(self.visited_destinations) > 0
         else:
-            return self.visited_destinations == self.destination_set
+            return self.visited_destinations == self.destination
 
     def _get_unvisited_neighbors(self) -> List[str]:
         """Get unvisited neighbors with optimized set lookup"""
@@ -212,7 +197,7 @@ class Ant:
         self.visited_nodes.add(self.current_node)
         
         # Update visited destinations
-        if self.current_node in self.destination_set:
+        if self.current_node in self.destination:
             self.visited_destinations.add(self.current_node)
 
         # Pick the next node of the ant
@@ -230,14 +215,11 @@ class Ant:
         self.current_node = next_node
         
         # Update visited_destinations if we've reached a destination
-        if self.current_node in self.destination_set:
+        if self.current_node in self.destination:
             self.visited_destinations.add(self.current_node)
 
     def deposit_pheromones_on_path(self) -> None:
-        """Updates the pheromones along all the edges in the path"""
-        # Avoid division by zero
-        deposit_amount = 1.0 / max(self.path_cost, 0.1)
-        
         for i in range(len(self.path) - 1):
             u, v = self.path[i], self.path[i + 1]
-            self.graph_api.deposit_pheromones(u, v, deposit_amount)
+            new_pheromone_value = 1 / self.path_cost
+            self.graph_api.deposit_pheromones(u, v, new_pheromone_value)

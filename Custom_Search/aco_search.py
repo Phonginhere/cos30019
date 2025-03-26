@@ -11,22 +11,7 @@ from aco_routing.network import Network
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 
-try:
-    from parser import parse_graph_file
-except ImportError:
-    # Handle the case where the parser module isn't available
-    def parse_graph_file(file_path):
-        # Simplified example parser
-        nodes = ['1', '2', '3', '4', '5']
-        edges = {
-            ('1', '2'): 1, 
-            ('2', '3'): 2, 
-            ('3', '4'): 1,
-            ('4', '5'): 3,
-            ('1', '5'): 10,  
-            ('2', '5'): 8    
-        }
-        return nodes, edges, '1', ['5']
+from parser import parse_graph_file
 
 def calculate_adaptive_parameters(graph, destinations, edges):
     """
@@ -59,11 +44,11 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # Scale parameters based on graph properties
     # Adjust ant_max_steps based on diameter and density
     if graph_density < 0.2:  # Very sparse graph
-        ant_max_steps = int(min(1000, 10 * diameter_estimate * node_count))
+        ant_max_steps = int(min(1000, 100 * diameter_estimate * node_count))
     elif graph_density > 0.7:  # Very dense graph
-        ant_max_steps = int(min(500, 2 * diameter_estimate))
+        ant_max_steps = int(min(500, 20 * diameter_estimate))
     else:  # Medium density
-        ant_max_steps = int(min(800, 3 * diameter_estimate))
+        ant_max_steps = int(min(800, 30 * diameter_estimate))
     
     # Scale iterations based on problem complexity
     if len(destinations) > 1:  # Multiple destinations is harder
@@ -75,7 +60,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     
     # Scale num_ants based on node count and edge diversity
     unique_edge_weights = len(set(weight for (_, _), weight in edges.items())) # Number of different value in edges
-    num_ants = int(min(300, max(10, 4 * node_count + 2 * unique_edge_weights * len(destinations))))
+    num_ants = int(min(300, max(10, 4 * node_count + 20 * unique_edge_weights * len(destinations))))
     
     # Apply minimum values to ensure algorithm works on small graphs
     ant_max_steps = max(20, ant_max_steps)
@@ -94,12 +79,6 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         # Many destinations - need more exploration
         ant_max_steps = int(ant_max_steps * 1.5)
         iterations = int(iterations * 1.3)
-        
-    # Increase exploration parameters when only one destination
-    if len(destinations) == 1:
-        ant_max_steps = int(ant_max_steps * 1.5)  # Allow ants to take more steps
-        iterations = int(iterations * 1.2)  # Run more iterations
-        num_ants = int(num_ants * 1.5)  # Use more ants
     
     # Calculate edge weight statistics for parameter tuning
     weights = [weight for (_, _), weight in edges.items()]
@@ -206,22 +185,11 @@ def main():
               ant_random_spawn=True) # Parallize optimization
 
     try:
-        # Check if multiple destinations need to be visited
-        if len(destinations) > 1:
-            # Multiple destinations - order doesn't matter
-            aco_path, aco_cost = aco.find_path_with_multiple_destinations(
-                source=origin,
-                destinations=destinations,
-                num_ants=num_ants
-            )
-        else:
-            # Single destination case
-            dest = destinations[0]  # Fixed - already ensured to be a list
-            aco_path, aco_cost = aco.find_path_with_single_destination(
-                source=origin,
-                destination=dest,
-                num_ants=num_ants
-            )
+        aco_path, aco_cost = aco.find_shortest_path(
+            source=origin,
+            destination=destinations,
+            num_ants=num_ants
+        )
         
         # Output results
         if not aco_path:

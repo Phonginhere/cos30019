@@ -56,7 +56,7 @@ def parse_graph_file(file_path):
                 origin = str(line)
             
             elif section == "destinations":
-                destinations = list(map(str, line.split(';')))
+                destinations = set([d.strip() for d in line.split(';') if d.strip()])
     
     return nodes, edges, origin, destinations
 
