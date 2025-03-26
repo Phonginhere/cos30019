@@ -125,8 +125,8 @@ class ACO:
             destination,
             is_solution_ant=True,
             # Use higher beta for solution ant to favor shorter paths
-            beta=self.beta,
-            alpha=self.alpha * 2,
+            beta=self.beta*2,
+            alpha=self.alpha/2,
             mode=self.mode
         )
         
