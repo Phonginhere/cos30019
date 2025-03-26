@@ -184,11 +184,10 @@ def main():
     G.graph = {node: [] for node in nodes}
     G.pos = nodes
     
-    # Add edges efficiently with consistent string conversion
+    # Add edges 
     for (start, end), weight in edges.items():
-        # Ensure nodes are strings
-        start_str = str(start)
-        end_str = str(end)
+        start_str = start
+        end_str = end
         G.add_edge(start_str, end_str, cost=float(weight))
         
     # Calculate adaptive parameters

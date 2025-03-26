@@ -85,10 +85,6 @@ class GraphApi:
             shortest_path_cost: The cost of the shortest path (optional)
         """
         try:
-            import matplotlib.pyplot as plt
-            
-            # Ensure all nodes in the path are strings
-            shortest_path = [str(node) for node in shortest_path]
             
             # Create a figure with a specific size
             plt.figure(figsize=(12, 10))
@@ -113,6 +109,41 @@ class GraphApi:
             path_ys = [self.graph.pos[node][1] for node in path_nodes if node in self.graph.pos]
             plt.scatter(path_xs, path_ys, s=900, c='lightcoral', edgecolors='black', zorder=2)
             
+            # Draw all edges in the graph with low opacity
+            for u, v in self.graph.get_edges():
+                
+                x1, y1 = self.graph.pos[u]
+                x2, y2 = self.graph.pos[v]
+                
+                # Draw edge with low opacity
+                plt.plot([x1, x2], [y1, y2], color='gray', linewidth=2, alpha=0.3, zorder=0)
+                
+                # Add arrow to show direction
+                dx = x2 - x1
+                dy = y2 - y1
+                plt.arrow(
+                    x1 + 0.8*dx, y1 + 0.8*dy, 
+                    0.1*dx, 0.1*dy, 
+                    head_width=0.05, 
+                    head_length=0.1, 
+                    fc='gray', ec='gray',
+                    zorder=0
+                )
+                
+                # Add faded edge label for cost, cost will closer with their arrow of direction
+                label_x, label_y = x1 + 0.75*dx, y1 + 0.75*dy
+                
+                edge_data = self.graph.edges.get((u, v), None)
+                if edge_data:
+                    cost = edge_data.get("cost", 0)
+                    pheromone = edge_data.get("pheromones", 0)
+                    label = f"cost: {cost}\npheromone: {round(pheromone, 2)}"
+                    plt.text(label_x, label_y, f"{cost}", fontsize=10, alpha=0.3,
+                            bbox=dict(facecolor='white', alpha=0.2, edgecolor='lightgrey'),
+                            ha='center', va='center',  # Center the text
+                            zorder=0)
+                    
+            
             # Draw only the edges that are in the path
             for i in range(len(shortest_path) - 1):
                 u, v = shortest_path[i], shortest_path[i + 1]
@@ -133,47 +164,42 @@ class GraphApi:
                 plt.arrow(
                     x1 + 0.8*dx, y1 + 0.8*dy, 
                     0.1*dx, 0.1*dy, 
-                    head_width=0.05, 
-                    head_length=0.1, 
+                    head_width=0.2, 
+                    head_length=0.2, 
                     fc='red', ec='red',
                     zorder=4
                 )
                 
-                # Add edge label with ONLY cost (no pheromones)
+                # Add edge label for cost
                 midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
                 
-                # Try both string and original forms of edge for lookup
                 edge_data = None
-                edge_pairs = [
-                    (u, v),
-                    (int(u) if u.isdigit() else u, int(v) if v.isdigit() else v),
-                    (str(u), str(v))
-                ]
+                edge_pairs = [(u, v)]
                 
                 for edge_pair in edge_pairs:
                     if edge_pair in self.graph.edges:
                         edge_data = self.graph.edges[edge_pair]
                         break
-                
+                    
                 if edge_data:
                     cost = edge_data.get("cost", 0)
-                    label = f"cost: {cost}"
-                    plt.text(midx, midy, label, fontsize=12, fontweight='bold',
+                    pheromone = edge_data.get("pheromones", 0)
+                    label = f"cost: {cost}\npheromone: {round(pheromone, 2)}"
+                    plt.text(midx, midy, label, fontsize=7, fontweight='bold',
                             bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
-                            zorder=5)
+                            zorder=5, ha='center', va='center')
             
             # Add node labels for ALL nodes
             for node in all_nodes:
-                str_node = str(node)
-                if str_node not in self.graph.pos:
+                if node not in self.graph.pos:
                     continue
                     
-                x, y = self.graph.pos[str_node]
+                x, y = self.graph.pos[node]
                 # Highlight path node labels
-                if str_node in path_nodes:
-                    plt.text(x, y, str_node, fontsize=14, fontweight='bold', ha='center', va='center', zorder=6)
+                if node in path_nodes:
+                    plt.text(x, y, node, fontsize=14, fontweight='bold', ha='center', va='center', zorder=6)
                 else:
-                    plt.text(x, y, str_node, fontsize=12, fontweight='normal', ha='center', va='center', zorder=6)
+                    plt.text(x, y, node, fontsize=12, fontweight='normal', ha='center', va='center', zorder=6)
             
             # Add grid
             plt.grid(True, linestyle='--', alpha=0.7)
@@ -190,7 +216,7 @@ class GraphApi:
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='lightcoral', 
                     markersize=15, label='Path node'),
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', 
-                    markersize=15, label='Regular node'),
+                    markersize=15, label='Unused node'),
             ]
             plt.legend(handles=legend_elements, loc='upper right')
             
@@ -208,127 +234,3 @@ class GraphApi:
             print(f"Detailed visualization error: {e}")
             traceback.print_exc()
         
-    def visualize_original_graph(self) -> None:
-        # Create a figure with a specific size
-        plt.figure(figsize=(12, 10))
-        
-        # Create positions for nodes (simple grid layout)
-        pos = self.graph.pos
-        
-        # Draw nodes
-        node_xs = [pos[node][0] for node in self.graph.nodes()]
-        node_ys = [pos[node][1] for node in self.graph.nodes()]
-        plt.scatter(node_xs, node_ys, s=700, c='skyblue', edgecolors='black')
-        
-        # Track bidirectional edges
-        bidirectional_edges = {}
-        
-        # First pass: identify bidirectional edges
-        for u, v in self.graph.get_edges():
-            if self.graph.has_edge(v, u):
-                # This is a bidirectional edge
-                if (v, u) not in bidirectional_edges:  # Avoid duplicates
-                    bidirectional_edges[(u, v)] = True
-                    bidirectional_edges[(v, u)] = True
-        
-        # Draw regular edges (not bidirectional)
-        for u, v in self.graph.get_edges():
-            if (u, v) not in bidirectional_edges:
-                x1, y1 = pos[u]
-                x2, y2 = pos[v]
-                plt.plot([x1, x2], [y1, y2], color='blue', linewidth=2, alpha=0.7)
-                
-                # Add arrow to show direction
-                dx = x2 - x1
-                dy = y2 - y1
-                plt.arrow(
-                    x1 + 0.8*dx, y1 + 0.8*dy, 
-                    0.1*dx, 0.1*dy, 
-                    head_width=0.05, 
-                    head_length=0.1, 
-                    fc='blue', ec='blue'
-                )
-        
-        # Draw bidirectional edges with curved lines
-        for u, v in bidirectional_edges:
-            # Only draw each bidirectional edge once
-            if u < v:  # Arbitrary ordering to avoid duplicates
-                x1, y1 = pos[u]
-                x2, y2 = pos[v]
-                
-                # Calculate curve control point
-                midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
-                normal_x, normal_y = -(y2 - y1), (x2 - x1)  # Normal to the line
-                length = (normal_x**2 + normal_y**2)**0.5
-                normal_x, normal_y = normal_x/length*0.2, normal_y/length*0.2  # Normalize and scale
-                
-                # Forward edge (u to v) - green curved arrow
-                plt.annotate(
-                    "", xy=(x2, y2), xytext=(x1, y1),
-                    arrowprops=dict(
-                        arrowstyle="->", color="green", lw=2,
-                        connectionstyle=f"arc3,rad=0.2"
-                    )
-                )
-                
-                # Backward edge (v to u) - red curved arrow
-                plt.annotate(
-                    "", xy=(x1, y1), xytext=(x2, y2),
-                    arrowprops=dict(
-                        arrowstyle="->", color="red", lw=2,
-                        connectionstyle=f"arc3,rad=0.2"
-                    )
-                )
-        
-        # Add node labels
-        for node in self.graph.nodes():
-            x, y = pos[node]
-            plt.text(x, y, node, fontsize=12, fontweight='bold', ha='center', va='center')
-        
-        # Add edge cost labels
-        for u, v in self.graph.get_edges():
-            x1, y1 = pos[u]
-            x2, y2 = pos[v]
-            midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
-            
-            # Adjust label position for bidirectional edges
-            if (u, v) in bidirectional_edges:
-                if u < v:  # Forward edge
-                    normal_x, normal_y = -(y2 - y1), (x2 - x1)  # Normal to the line
-                    length = (normal_x**2 + normal_y**2)**0.5
-                    normal_x, normal_y = normal_x/length*0.1, normal_y/length*0.1  # Normalize and scale
-                    midx += normal_x
-                    midy += normal_y
-                else:  # Backward edge
-                    normal_x, normal_y = (y2 - y1), -(x2 - x1)  # Normal to the line
-                    length = (normal_x**2 + normal_y**2)**0.5
-                    normal_x, normal_y = normal_x/length*0.1, normal_y/length*0.1  # Normalize and scale
-                    midx += normal_x
-                    midy += normal_y
-            
-            cost = str(self.graph.edges[(u, v)].get("cost", ""))
-            plt.text(midx, midy, cost, fontsize=10, 
-                    bbox=dict(facecolor='white', alpha=0.7))
-        
-        # Add grid
-        plt.grid(True, linestyle='--', alpha=0.7)
-        
-        # Add labels and title
-        plt.xlabel('X coordinate')
-        plt.ylabel('Y coordinate')
-        plt.title('Graph Visualization with Bidirectional Edges')
-        
-        # Add a legend for edge types
-        from matplotlib.lines import Line2D
-        legend_elements = [
-            Line2D([0], [0], color='blue', lw=2, label='One-way edge'),
-            Line2D([0], [0], color='green', lw=2, label='Two-way edge (forward)'),
-            Line2D([0], [0], color='red', lw=2, label='Two-way edge (reverse)')
-        ]
-        plt.legend(handles=legend_elements, loc='upper right')
-        
-        # Adjust layout
-        plt.tight_layout()
-        
-        # Show the plot
-        plt.show()

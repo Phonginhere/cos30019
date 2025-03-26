@@ -49,7 +49,7 @@ def parse_graph_file(file_path):
             elif section == "edges":
                 match = re.match(r"\((\d+),(\d+)\): (\d+)", line)
                 if match:
-                    node1, node2, weight = int(match.group(1)), int(match.group(2)), int(match.group(3))
+                    node1, node2, weight = str(match.group(1)), str(match.group(2)), int(match.group(3))
                     edges[(node1, node2)] = weight
             
             elif section == "origin":
@@ -62,7 +62,7 @@ def parse_graph_file(file_path):
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "graph_data.txt"  # Replace with your actual file name
+    file_path = "Data/PathFinder-test.txt"  # Replace with your actual file name
     nodes, edges, origin, destinations = parse_graph_file(file_path)
     
     print("Nodes:", nodes)
