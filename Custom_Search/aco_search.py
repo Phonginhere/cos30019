@@ -165,11 +165,9 @@ def main():
     
     # Add edges 
     for (start, end), weight in edges.items():
-        start_str = start
-        end_str = end
-        G.add_edge(start_str, end_str, cost=float(weight))
+        G.add_edge(start, end, cost=float(weight))
         
-    # Calculate adaptive parameters
+    # Calculate adaptive parametersg
     ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
     
     print(f"Adaptive parameters: ant_max_steps={ant_max_steps}, iterations={iterations}, num_ants={num_ants}")
