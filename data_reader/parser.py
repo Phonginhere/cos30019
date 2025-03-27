@@ -62,7 +62,7 @@ def parse_graph_file(file_path):
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "Data/PathFinder-test.txt"  # Replace with your actual file name
+    file_path = "Data/TSP_Test_case_1.txt"  # Replace with your actual file name
     nodes, edges, origin, destinations = parse_graph_file(file_path)
     
     print("Nodes:", nodes)
