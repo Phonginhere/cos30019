@@ -1,7 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "",
-        "{   \"python.analysis.extraPaths\": [     \"/Users/honganhnguyen/Documents/Study/Applied_ML\"   ] }",
-        "./Data"
-    ]
-}

@@ -176,3 +176,4 @@ cython_debug/
 # Data
 *.csv
 Custom_Search/aco_routing/__pycache__/utils.cpython-312.pyc
+.vscode/settings.json
