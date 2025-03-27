@@ -12,7 +12,7 @@ def parse_graph_file(file_path):
             - nodes (dict): Mapping of node IDs to coordinates {node_id: (x, y)}.
             - edges (dict): Mapping of edge pairs to weights {(node1, node2): weight}.
             - origin (str): The origin node.
-            - destinations (list): List of destination nodes.
+            - destinations (set): List of destination nodes.
     """
     nodes = {}
     edges = {}

@@ -137,11 +137,11 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         alpha *= 1.1
         beta *= 1.1
     
-    # Multiple close destinations require careful balancing
-    if len(destinations) > 3:
-        evaporation_rate = max(0.08, evaporation_rate)
-        alpha = max(1.0, alpha)
-        beta = max(1.0, beta)
+    # # Multiple close destinations require careful balancing
+    # if len(destinations) > 3:
+    #     evaporation_rate = max(0.08, evaporation_rate)
+    #     alpha = max(1.0, alpha)
+    #     beta = max(1.0, beta)
     
     return ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta
 
@@ -210,7 +210,6 @@ def main():
         print(f"{aco_cost}")
         
         aco.graph_api.visualize_graph(aco_path, aco_cost)
-            
 
 if __name__ == "__main__":
     main()

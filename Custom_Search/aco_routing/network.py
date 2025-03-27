@@ -59,7 +59,6 @@ class Network:
     def __getitem__(self, node):
         """Allow dictionary-like access to node attributes."""
         if node in self.graph:
-            # Create a NodeDict that simulates NetworkX node access
             return NodeDict(self, node)
         raise KeyError(f"Node {node} not in graph")
 

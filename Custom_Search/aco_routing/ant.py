@@ -191,6 +191,9 @@ class Ant:
             # Pick the next node based on the roulette wheel selection technique
             return utils.roulette_wheel_selection(probabilities)
 
+        # # Pick the next node based on the roulette wheel selection technique
+        # return utils.roulette_wheel_selection(probabilities)
+
     def take_step(self) -> None:
         """Compute and update the ant position"""
         # Mark the current node as visited
