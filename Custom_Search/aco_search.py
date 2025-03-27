@@ -147,7 +147,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
 
 def main():
     # Get file path from command line argument if provided
-    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/PathFinder-test.txt"
+    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/TSP_Test_case_1.txt"
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
