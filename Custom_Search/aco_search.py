@@ -169,8 +169,8 @@ def main():
     # Calculate adaptive parametersg
     # ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
     ant_max_steps = 50
-    iterations = 500
-    num_ants = 550
+    iterations = 250
+    num_ants = 250
     evaporation_rate = 0.1
     alpha = 1
     beta = 2
