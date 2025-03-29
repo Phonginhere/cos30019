@@ -13,7 +13,7 @@ This repository contains the implementation of various search algorithms for pat
 2. **AS (A* Search)** - Implemented by Tuan
 
 ### Custom Search Algorithms
-1. **CUS1 (Uniform Cost Search)** - Implemented by Phong
+1. **CUS1 (Dijkstras Algorithm Search)** - Implemented by Phong
 2. **CUS2 (Ant Colony Optimization)** - Implemented by Pink
 
 ## Usage
