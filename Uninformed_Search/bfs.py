@@ -1,94 +1,36 @@
 import os
 import sys
 
-from collections import deque
-
+# Set up path for imports
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-
-sys.path.append(os.path.join(parent_dir, "Custom_Search"))
-from Custom_Search.aco_routing.network import Network
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 from parser import parse_graph_file
 
-file_path = "Data/PathFinder-test.txt"
+# Import the UninformNetwork class
+sys.path.append(os.path.join(current_dir, "entity"))
+from Uninformed_Search.entity.UninformNetwork import UninformNetwork
 
+# Parse the graph file
+file_path = "Data/PathFinder-test.txt"
 print("Parsing graph file:", file_path)
 nodes, edges, origin, destinations = parse_graph_file(file_path)
 
-# Print goals
+# Print goals and number of nodes
 print("Goals:", destinations)
-# Print number of nodes
 print("Number of nodes:", len(nodes))
 
-# Functions for BFS
+# Create the UninformNetwork instance
+network = UninformNetwork()
+network.build_from_data(nodes, edges)
 
-def build_graph(nodes, edges):
-    """
-    Construct a graph dictionary from nodes and edges.
-    
-    Parameters:
-      nodes - a list of node identifiers
-      edges - a dictionary where keys are (src, tgt) tuples and values are weights
-      
-    Returns:
-      A dictionary mapping each node to a list of (neighbor, weight) tuples.
-    """
-    # Initialize graph with every node (even if no outgoing edges)
-    graph = {node: [] for node in nodes}
-    
-    # Process each edge and add to adjacency list with weight
-    for (src, tgt), weight in edges.items():
-        # print(f"Edge: {src} -> {tgt}, Cost: {weight}")
-        graph[src].append((tgt, weight))
-    
-    return graph
+# Find and display the shortest path to any destination
+shortest_path, shortest_dest, shortest_weight = network.find_shortest_path_to_destinations(origin, destinations)
 
-def bfs(graph, start):
-    visited = set()
-    queue = deque([start])
-    visited.add(start)
-    
-    while queue:
-        node = queue.popleft()
-        print( node , end = ' ; ')
-        for neighbor, weight in graph[node]: # Unpack the tuple to get node and weight
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append(neighbor)
-
-def bfs_path(graph, start, goal):
-    visited = set()
-    queue = deque([(start, [start])])
-    
-    
-    while queue:
-        current, path = queue.popleft()
-        
-        if current == goal:
-            return path
-        
-        for neighbor, weight in graph[current]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append((neighbor, path + [neighbor]))
-
-    return None
-
-# Build the graph dictionary from the nodes and edges
-graph = build_graph(nodes, edges)
-    
-# Display BFS traversal from the origin
-print("BFS Traversal from origin:", origin)
-bfs(graph, origin)
-print("\n")
-    
-# For each destination, find and display the path from origin
-for dest in destinations:
-    path = bfs_path(graph, origin, dest)
-    if path:
-        print(f"Path from {origin} to {dest}: {' -> '.join(map(str, path))}")
-    else:
-        print(f"No path found from {origin} to {dest}")
+# Show the result
+if shortest_path:
+    print(f"Path: {' -> '.join(map(str, shortest_path))} with total weight {shortest_weight}")
+else:
+    print("\nNo paths found to any destination.")
