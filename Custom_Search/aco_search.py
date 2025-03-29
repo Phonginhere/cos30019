@@ -23,7 +23,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         edges: Dictionary of edges and their weights
         
     Returns:
-        tuple: (ant_max_steps, iterations, num_ants)
+        tuple: (ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta)
     """
     # Get graph properties
     node_count = graph.number_of_nodes()
@@ -37,48 +37,46 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     avg_degree = edge_count / node_count if node_count > 0 else 0
     
     # Calculate graph diameter estimate (approximate longest path)
-    # For connected graphs, diameter is typically proportional to log(node_count)
-    # For sparse graphs, it can be higher
-    diameter_estimate = int(max(5, min(node_count, 2 * (1 + node_count / max(1, avg_degree)))))
+    diameter_estimate = int(max(5, min(node_count // 2, 2 * (1 + node_count / max(1, avg_degree)))))
     
-    # Scale parameters based on graph properties
+    # Scale parameters based on graph properties - REDUCED VALUES
     # Adjust ant_max_steps based on diameter and density
     if graph_density < 0.2:  # Very sparse graph
-        ant_max_steps = int(min(1000, 100 * diameter_estimate * node_count))
+        ant_max_steps = int(min(300, 20 * diameter_estimate))
     elif graph_density > 0.7:  # Very dense graph
-        ant_max_steps = int(min(500, 70 * diameter_estimate))
+        ant_max_steps = int(min(150, 15 * diameter_estimate))
     else:  # Medium density
-        ant_max_steps = int(min(800, 40 * diameter_estimate))
+        ant_max_steps = int(min(200, 18 * diameter_estimate))
     
-    # Scale iterations based on problem complexity
+    # Scale iterations based on problem complexity - REDUCED VALUES
     if len(destinations) > 1:  # Multiple destinations is harder
-        complexity_factor = 1.5
+        complexity_factor = 1.2
     else:
         complexity_factor = 1.0
         
-    iterations = int(min(500, complexity_factor * 30 * (1 * node_count + 0.3 * edge_count)))
+    iterations = int(min(100, complexity_factor * 5 * (0.3 * node_count + 0.1 * edge_count)))
     
-    # Scale num_ants based on node count and edge diversity
-    unique_edge_weights = len(set(weight for (_, _), weight in edges.items())) # Number of different value in edges
-    num_ants = int(min(300, max(10, 4 * node_count + 20 * unique_edge_weights * len(destinations))))
+    # Scale num_ants based on node count and edge diversity - REDUCED VALUES
+    unique_edge_weights = len(set(weight for (_, _), weight in edges.items()))
+    num_ants = int(min(80, max(10, node_count + 3 * unique_edge_weights * len(destinations))))
     
     # Apply minimum values to ensure algorithm works on small graphs
     ant_max_steps = max(20, ant_max_steps)
-    iterations = max(30, iterations)
+    iterations = max(15, iterations)
     num_ants = max(10, num_ants)
     
-    # Special case handling for known difficult graph patterns
+    # Special case handling for known difficult graph patterns - REDUCED MULTIPLIERS
     if graph_density < 0.1 and node_count > 15:
         # Potentially disconnected graph - increase parameters
-        ant_max_steps = int(ant_max_steps * 2)
-        iterations = int(iterations * 1.5)
-        num_ants = int(num_ants * 1.2)
+        ant_max_steps = int(ant_max_steps * 1.3)
+        iterations = int(iterations * 1.2)
+        num_ants = int(num_ants * 1.1)
         
     # Check for too many destinations compared to nodes
     if len(destinations) > node_count / 3:
         # Many destinations - need more exploration
-        ant_max_steps = int(ant_max_steps * 1.5)
-        iterations = int(iterations * 1.3)
+        ant_max_steps = int(ant_max_steps * 1.2)
+        iterations = int(iterations * 1.1)
     
     # Calculate edge weight statistics for parameter tuning
     weights = [weight for (_, _), weight in edges.items()]
@@ -87,10 +85,8 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     weight_uniformity = weight_variance / (max(weights)**2) if weights and max(weights) > 0 else 0
     
     # EVAPORATION RATE optimization
-    # Higher for dense graphs with uniform weights (encourages convergence)
-    # Lower for sparse graphs with varied weights (encourages exploration)
     if graph_density > 0.6:  # Dense graph
-        evaporation_rate = 0.2  # Faster convergence for dense graphs
+        evaporation_rate = 0.15  # Faster convergence for dense graphs
     elif graph_density < 0.2:  # Sparse graph
         evaporation_rate = 0.05  # More exploration for sparse graphs
     else:  # Medium density
@@ -103,51 +99,54 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         evaporation_rate *= 1.2  # Increase to converge faster
         
     # Clamp to reasonable range
-    evaporation_rate = max(0.01, min(0.5, evaporation_rate))
+    evaporation_rate = max(0.01, min(0.3, evaporation_rate))
     
-    # ALPHA (pheromone importance) optimization
-    # Higher for more complex graphs where historical paths matter
-    # Lower for simpler graphs where greedy approaches work well
+    # ALPHA (pheromone importance) and BETA (heuristic importance) optimization
+    # REBALANCED to give beta more influence
     if node_count > 25 or len(destinations) > 5:
-        alpha = 1  # Rely more on pheromones for complex problems
+        alpha = 0.3  # REDUCED from 0.6
+        beta = 1.0   # Higher beta for better heuristic guidance
     elif node_count < 10 and len(destinations) <= 2:
-        alpha = 0.3  # Less pheromone influence for simple problems
+        alpha = 0.1  # Less pheromone influence for simple problems
+        beta = 0.8   # Still maintain good heuristic guidance
     else:
-        alpha = 0.5  # Balanced approach
-        
-    # Adjust for past success (would need tracking between runs)
-    # This is simplified here
+        alpha = 0.2  # REDUCED from 0.3
+        beta = 0.9   # Higher beta for better path finding
+    
+    # Adjust alpha/beta based on graph density
     if graph_density > 0.7:
-        alpha *= 0.9  # Dense graphs often benefit from more greedy approaches
+        alpha *= 0.9  # Dense graphs benefit from more greedy approaches
+        beta *= 1.1   # Increase heuristic importance in dense graphs
     
-    # BETA (heuristic importance) optimization
-    # Higher for graphs with significant weight differences
-    # Lower for graphs with uniform weights
+    # Adjust beta based on weight distribution
     if weight_range > 10 * min(weights) if weights and min(weights) > 0 else False:
-        beta = 1  # High weight variance - rely more on heuristic
+        beta = max(beta, 1.2)  # High weight variance - rely more on heuristic
     elif weight_uniformity > 0.7:  # Very uniform weights
-        beta = 0.3  # Heuristic provides less useful information
-    else:
-        beta = 0.5  # Balanced approach
+        beta = min(beta, 0.7)  # Heuristic provides less useful information
     
-    # Special cases
+    # Special cases - REBALANCED
     if len(destinations) == 1 and node_count > 30:
         # Single destination in large graph - balance exploration and exploitation
         evaporation_rate = max(0.05, evaporation_rate * 0.8)
-        alpha *= 1.1
-        beta *= 1.1
+        alpha = min(0.4, alpha * 1.1)  # Cap at reasonable value
+        beta = max(0.8, beta * 1.1)     # Ensure sufficient heuristic influence
     
-    # # Multiple close destinations require careful balancing
-    # if len(destinations) > 3:
-    #     evaporation_rate = max(0.08, evaporation_rate)
-    #     alpha = max(1.0, alpha)
-    #     beta = max(1.0, beta)
+    # Ensure alpha is always lower than beta for better path finding
+    if alpha >= beta:
+        beta = alpha * 1.5
+    
+    # Hard caps to prevent extreme values
+    ant_max_steps = min(300, ant_max_steps)
+    iterations = min(100, iterations)
+    num_ants = min(100, num_ants)
+    alpha = min(0.5, alpha)
+    beta = min(1.5, max(0.5, beta))
     
     return ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta
 
 def main():
     # Get file path from command line argument if provided
-    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/TSP_Test_case_1.txt"
+    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/PathFinder-test.txt"
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -168,7 +167,13 @@ def main():
         G.add_edge(start, end, cost=float(weight))
         
     # Calculate adaptive parametersg
-    ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
+    # ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
+    ant_max_steps = 172
+    iterations = 66
+    num_ants = 99
+    evaporation_rate = 0.1
+    alpha = 0.46
+    beta = 0.36
     
     print(f"Adaptive parameters: ant_max_steps={ant_max_steps}, iterations={iterations}, num_ants={num_ants}")
     print(f"ACO tuning: evaporation_rate={evaporation_rate:.2f}, alpha={alpha:.2f}, beta={beta:.2f}")
@@ -207,7 +212,7 @@ def main():
         print(f"{path_str}")
         print(f"{aco_cost}")
         
-        aco.graph_api.visualize_graph(aco_path, aco_cost)
+        # aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
