@@ -102,12 +102,13 @@ class Ant:
                 self.current_node, neighbor
             )
             edge_cost = self.graph_api.get_edge_cost(self.current_node, neighbor)
+            edge_distance = self.graph_api.get_edge_distance(self.current_node, neighbor)
             # Avoid division by zero
             if edge_cost == 0:
                 edge_cost = 0.001  # Small value instead of zero
                 
             total += utils.compute_edge_desirability(
-                edge_pheromones, edge_cost, self.alpha, self.beta
+                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta
             )
 
         return total
@@ -140,13 +141,14 @@ class Ant:
                 self.current_node, neighbor
             )
             edge_cost = self.graph_api.get_edge_cost(self.current_node, neighbor)
-
+            edge_distance = self.graph_api.get_edge_distance(self.current_node, neighbor)
+            
             # Avoid division by zero
             if edge_cost == 0:
                 edge_cost = 0.001  # Small value instead of zero
 
             current_edge_desirability = utils.compute_edge_desirability(
-                edge_pheromones, edge_cost, self.alpha, self.beta
+                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta
             )
             probabilities[neighbor] = current_edge_desirability / all_edges_desirability
 

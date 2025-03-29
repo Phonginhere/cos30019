@@ -67,6 +67,15 @@ class GraphApi:
         # Fallback to original implementation
         return self.graph.edges.get((u, v), {}).get("cost", float('inf'))
 
+    def get_edge_distance(self, u: str, v: str) -> float:
+        """Get edge distance with caching for better performance"""
+        # Use cached value if available
+        if hasattr(self, '_edge_distance_cache') and (u, v) in self._edge_distance_cache:
+            return self._edge_distance_cache[(u, v)]
+        
+        # Fallback to original implementation
+        return self.graph.edges.get((u, v), {}).get("distance", float('inf'))
+
     def get_all_nodes(self) -> List[str]:
         return list(self.graph.nodes())
 

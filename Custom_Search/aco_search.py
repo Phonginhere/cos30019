@@ -165,7 +165,7 @@ def main():
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
-        
+    
     # Calculate adaptive parametersg
     # ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
     ant_max_steps = 50

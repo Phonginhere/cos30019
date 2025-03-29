@@ -2,7 +2,7 @@ class Network:
     def __init__(self):
         self.graph = {}  # Stores adjacency list: node -> list of neighbors
         self.edges = {}  # Stores edge attributes: (u,v) -> attribute dict
-        self.pos = {}
+        self.pos = {} # Stores node positions for visualization
 
     def add_edge(self, u, v, **attr):
         """Add an edge between u and v with optional attributes."""
@@ -15,6 +15,18 @@ class Network:
         # Add v to u's neighbors if not already present
         if v not in self.graph[u]:
             self.graph[u].append(v)
+            
+        # Calculate Euclidean distance if positions are available
+        if u in self.pos and v in self.pos:
+            # Extract coordinates
+            pos_u = self.pos[u]
+            pos_v = self.pos[v]
+            
+            # Calculate Euclidean distance
+            distance = ((pos_u[0] - pos_v[0]) ** 2 + (pos_u[1] - pos_v[1]) ** 2) ** 0.5
+            
+            # Add distance as an attribute
+            attr['distance'] = round(distance, 2)
             
         # Store edge attributes
         self.edges[(u, v)] = attr
