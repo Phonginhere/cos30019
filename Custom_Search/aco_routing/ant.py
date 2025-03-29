@@ -19,7 +19,7 @@ class Ant:
         alpha: float = 0.7,
         beta: float = 0.3,
         is_solution_ant: bool = False,
-        mode: int = 0
+        mode: int = 0,
     ):
         """Initialize an ant for ACO algorithm.
         
@@ -44,6 +44,7 @@ class Ant:
         self.is_solution_ant = is_solution_ant
         self.visited_destinations = set()
         self.mode = mode
+        self.pheromone_deposit_weight = 1 # Weight for pheromone deposit
         
         # Set the spawn node as the current and first node
         self.current_node = self.source
@@ -224,5 +225,5 @@ class Ant:
     def deposit_pheromones_on_path(self, elitist_param) -> None:
         for i in range(len(self.path) - 1):
             u, v = self.path[i], self.path[i + 1]
-            new_pheromone_value = 3 / self.path_cost
+            new_pheromone_value = self.pheromone_deposit_weight / self.path_cost
             self.graph_api.deposit_pheromones(u, v, new_pheromone_value, elitist_param/self.path_cost)

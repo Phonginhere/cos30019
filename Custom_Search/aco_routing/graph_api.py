@@ -46,13 +46,17 @@ class GraphApi:
             new_pheromone = pheromones + pheromone_amount + elitist_param
             self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
             
-    def evaporate_pheromones(self) -> None:
+    def update_pheromones(self, max_pheromon, min_pheromon) -> None:
         """Evaporate pheromones on all edges of the graph."""
         for u, v in self.graph.get_edges():
             if (u, v) in self.graph.edges:
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
                 new_pheromone = (1 - self.evaporation_rate) * pheromones
-                self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
+                if new_pheromone < min_pheromon:
+                    new_pheromone = min_pheromon
+                elif new_pheromone > max_pheromon:
+                    new_pheromone = max_pheromon
+                self.graph.edges[(u, v)]["pheromones"] = new_pheromone
 
     def get_edge_cost(self, u: str, v: str) -> float:
         """Get edge cost with caching for better performance"""

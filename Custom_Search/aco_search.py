@@ -168,12 +168,12 @@ def main():
         
     # Calculate adaptive parametersg
     # ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
-    ant_max_steps = 172
-    iterations = 66
-    num_ants = 99
+    ant_max_steps = 50
+    iterations = 500
+    num_ants = 550
     evaporation_rate = 0.1
-    alpha = 0.46
-    beta = 0.36
+    alpha = 1
+    beta = 2
     
     print(f"Adaptive parameters: ant_max_steps={ant_max_steps}, iterations={iterations}, num_ants={num_ants}")
     print(f"ACO tuning: evaporation_rate={evaporation_rate:.2f}, alpha={alpha:.2f}, beta={beta:.2f}")
@@ -212,7 +212,7 @@ def main():
         print(f"{path_str}")
         print(f"{aco_cost}")
         
-        # aco.graph_api.visualize_graph(aco_path, aco_cost)
+        aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
