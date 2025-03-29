@@ -1,16 +1,16 @@
 import os
 import sys
-
-from collections import deque
+import heapq
+from collections import defaultdict
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
 sys.path.append(os.path.join(parent_dir, "Custom_Search"))
-from Custom_Search.aco_routing.network import Network
+from aco_routing.network import Network
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_dir, "..", "data_reader"))
+sys.path.append(os.path.join(current_dir, "..", "..", "data_reader"))
 from parser import parse_graph_file
 
 file_path = "Data/PathFinder-test.txt"
@@ -23,7 +23,7 @@ print("Goals:", destinations)
 # Print number of nodes
 print("Number of nodes:", len(nodes))
 
-# Functions for BFS
+# Function for Dijkstra's Algorithm
 
 def build_graph(nodes, edges):
     """
@@ -46,48 +46,33 @@ def build_graph(nodes, edges):
     
     return graph
 
-def bfs(graph, start):
+def dijkstra(graph, start, goals):
     visited = set()
-    queue = deque([start])
-    visited.add(start)
+    heap = [(0, start, [start])]
     
-    while queue:
-        node = queue.popleft()
-        print( node , end = ' ; ')
-        for neighbor, weight in graph[node]: # Unpack the tuple to get node and weight
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append(neighbor)
-
-def bfs_path(graph, start, goal):
-    visited = set()
-    queue = deque([(start, [start])])
-    
-    
-    while queue:
-        current, path = queue.popleft()
+    while heap:
+        cost, node, path = heapq.heappop(heap)
         
-        if current == goal:
-            return path
+        if node == goals:  # Check if we've reached the goal
+            return node, len(path), path, cost
         
-        for neighbor, weight in graph[current]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append((neighbor, path + [neighbor]))
+        if node in visited:
+            continue
+        
+        visited.add(node)
 
-    return None
+        for neighbor, edge_cost in graph.get(node, []): # Access the list of tuples directly
+            if neighbor not in visited:
+                heapq.heappush(heap, (cost + edge_cost, neighbor, path + [neighbor]))
+        
+    return None, float('inf') 
 
 # Build the graph dictionary from the nodes and edges
 graph = build_graph(nodes, edges)
-    
-# Display BFS traversal from the origin
-print("BFS Traversal from origin:", origin)
-bfs(graph, origin)
-print("\n")
-    
-# For each destination, find and display the path from origin
+
+# Example usage of Dijkstra's algorithm
 for dest in destinations:
-    path = bfs_path(graph, origin, dest)
+    path = dijkstra(graph, origin, dest)
     if path:
         print(f"Path from {origin} to {dest}: {' -> '.join(map(str, path))}")
     else:

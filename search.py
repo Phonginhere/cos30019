@@ -62,8 +62,47 @@ def main():
             sys.exit(1)
     
     elif algorithm == "BFS":
+        print("Breadth-First Search algorithm method selected")
         # Add BFS implementation here
-        print("BFS algorithm selected (not implemented yet)")
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            bfs_path = os.path.join(current_dir, "Uninformed_Search", "bfs.py")
+            
+            # Add Uninformed_Search directory to sys.path
+            uninformed_search_dir = os.path.join(current_dir, "Uninformed_Search")
+            if uninformed_search_dir not in sys.path:
+                sys.path.insert(0, uninformed_search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(bfs_path):
+                print(f"Loading BFS module from: {bfs_path}")
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("bfs", bfs_path)
+                bfs_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(bfs_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [bfs_path] + remaining_args
+                else:
+                    sys.argv = [bfs_path]
+                
+                # Execute the BFS code (it runs automatically when imported)
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: BFS module {bfs_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing BFS search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
     
     elif algorithm == "DFS":
         # Add DFS implementation here
@@ -78,8 +117,47 @@ def main():
         print("Greedy Best-First Search algorithm selected (not implemented yet)")
         
     elif algorithm == "CUS1":
+        print("Dijkstras algorithm method selected")
         # Add Uniform Cost Search implementation here
-        print("Uniform Cost Search algorithm selected (not implemented yet)")
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            bfs_path = os.path.join(current_dir, "Custom_Search", "Dijkstras_Algorithm", "dijk.py")
+            
+            # Add Custom Search directory to sys.path
+            uninformed_search_dir = os.path.join(current_dir, "Dijkstras_Algorithm")
+            if uninformed_search_dir not in sys.path:
+                sys.path.insert(0, uninformed_search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(bfs_path):
+                print(f"Loading Dijkstras module from: {bfs_path}")
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("bfs", bfs_path)
+                bfs_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(bfs_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [bfs_path] + remaining_args
+                else:
+                    sys.argv = [bfs_path]
+                
+                # Execute the BFS code (it runs automatically when imported)
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: BFS module {bfs_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing BFS search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
         
     else:
         print(f"Unknown algorithm: {algorithm}")

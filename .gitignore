@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.pyc
 
+
 # C extensions
 *.so
 
@@ -176,6 +177,11 @@ cython_debug/
 
 # Data
 *.csv
-Custom_Search/aco_routing/__pycache__/utils.cpython-312.pyc
+Custom_Search/aco_routing/__pycache__/*.pyc
+Custom_Search/Dijkstras_Algorithm/__pycache__/*.pyc
+data_reader/__pycache__/*.pyc
 .vscode/settings.json
 .idea/inspectionProfiles/Project_Default.xml
+
+*.DS_Store
+Custom_Search/.DS_Store
