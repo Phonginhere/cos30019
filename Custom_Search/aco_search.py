@@ -30,7 +30,7 @@ def main():
     # Pre-allocate graph memory
     G.graph = {node: [] for node in nodes}
     G.pos = nodes
-    
+    print(nodes)
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))

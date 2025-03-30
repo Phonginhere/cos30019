@@ -152,6 +152,9 @@ class ACO:
             # Logging 
             if self.log_step != None and ((iteration + 1) % self.log_step == 0):
                 print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
+            
+            # Visulize 
+            self.graph_api.visualize_graph(self.best_path, self.best_path_cost)
 
     def find_shortest_path(
         self,
