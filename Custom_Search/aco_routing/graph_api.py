@@ -2,7 +2,6 @@ from typing import List, Dict
 import matplotlib.pyplot as plt
 import os
 import sys
-import math
 
 # Add the parent directory to the system path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,12 +25,6 @@ class GraphApi:
         self._edge_cost_cache = {}
         self._neighbor_cache = {}
         
-        # Initialize gradient descent pheromone update
-        self.gt = 0.0
-        self.acc = 0.0
-        self.d_acc = 1
-        self.weight_decay = 0.1
-        
         # Precompute edge costs
         for u, v in self.graph.get_edges():
             self._edge_cost_cache[(u, v)] = self.graph.edges.get((u, v), {}).get("cost", float('inf'))
@@ -47,25 +40,23 @@ class GraphApi:
     def get_edge_pheromones(self, u: str, v: str) -> float:
         return self.graph.edges.get((u, v), {}).get("pheromones", 0.0)
 
-    def deposit_pheromones(self, u: str, v: str, deposit_pheromone_value: float, elitist_param: float) -> None:
+    def deposit_pheromones(self, u: str, v: str, pheromone_amount: float, elitist_param: float) -> None:
         if (u, v) in self.graph.edges:
-            self.graph.edges[(u, v)]["total_deposite_pheromones"] = deposit_pheromone_value + elitist_param
+            pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
+            new_pheromone = pheromones + pheromone_amount + elitist_param
+            self.graph.edges[(u, v)]["pheromones"] = max(new_pheromone, 1e-13)
             
     def update_pheromones(self, max_pheromon, min_pheromon) -> None:
         """Evaporate pheromones on all edges of the graph."""
         for u, v in self.graph.get_edges():
             if (u, v) in self.graph.edges:
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
-                total_deposite_pheromones = self.graph.edges[(u, v)].get("total_deposite_pheromones", 0.0)
-                pheromones += total_deposite_pheromones  # Add deposited pheromones
-                self.graph.edges[(u, v)]["total_deposite_pheromones"] = 0.0  # Reset deposited pheromones
-                pheromones *= (1 - self.evaporation_rate)  # Evaporate pheromones
-                if pheromones < min_pheromon:
-                    pheromones = min_pheromon
-                elif pheromones > max_pheromon:
-                    pheromones = max_pheromon
-                self.graph.edges[(u, v)]["pheromones"] = pheromones
-                
+                new_pheromone = (1 - self.evaporation_rate) * pheromones
+                if new_pheromone < min_pheromon:
+                    new_pheromone = min_pheromon
+                elif new_pheromone > max_pheromon:
+                    new_pheromone = max_pheromon
+                self.graph.edges[(u, v)]["pheromones"] = new_pheromone
 
     def get_edge_cost(self, u: str, v: str) -> float:
         """Get edge cost with caching for better performance"""
