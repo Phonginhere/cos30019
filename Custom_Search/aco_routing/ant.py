@@ -187,12 +187,8 @@ class Ant:
         # For regular ants, use probabilistic selection
         probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
         
-        # Check for equal probabilities
-        if all(prob == 1.0 / len(unvisited_neighbors) for prob in probabilities.values()):
-            return min(prob for prob in probabilities.keys())
-        else:
-            # Pick the next node based on the roulette wheel selection technique
-            return utils.roulette_wheel_selection(probabilities)
+        # Pick the next node based on the roulette wheel selection technique
+        return utils.roulette_wheel_selection(probabilities)
 
         # # Pick the next node based on the roulette wheel selection technique
         # return utils.roulette_wheel_selection(probabilities)
