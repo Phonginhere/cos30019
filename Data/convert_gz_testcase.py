@@ -131,7 +131,7 @@ if __name__ == "__main__":
         output_file = sys.argv[2]
     else:
         # Default filenames
-        nodes_file = 'Data/TSP_Test_case_2.txt'
+        nodes_file = 'Data/TSP_Test_case_4.txt'
         output_file = 'Data/all_edges.txt'
     
     print(f"Input file: {nodes_file}")

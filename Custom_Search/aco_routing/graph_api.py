@@ -55,15 +55,17 @@ class GraphApi:
     def update_pheromones(self, max_pheromon, min_pheromon, current_acc, current_d_acc) -> None:
         for u, v in self.graph.get_edges():
             if (u, v) in self.graph.edges:
+                # Gradient descent update
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
                 gt = pheromones - self.graph.edges[(u, v)].get("delta_pheromones", 0.0) / self.evaporation_rate
                 acc = self.gamma * current_acc + (1 - self.gamma) * gt * gt
                 update = (gt * math.sqrt(current_d_acc + self.epsilon)) / (math.sqrt(acc + self.epsilon))
-                new_pheromone = pheromones- update
+                new_pheromone = pheromones - update
                 d_acc = self.gamma * current_d_acc + (1 - self.gamma) * update * update
                 
-                # new_pheromone = (1 - self.evaporation_rate) * pheromones + self.graph.edges[(u, v)].get("delta_pheromones", 0.0)
                 self.graph.edges[(u, v)]["delta_pheromones"] = 0.0  # Reset delta pheromone after updating
+                
+                # Max min ant system
                 if new_pheromone < min_pheromon:
                     new_pheromone = min_pheromon
                 elif new_pheromone > max_pheromon:

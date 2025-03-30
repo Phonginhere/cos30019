@@ -6,13 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from itertools import product
 from concurrent.futures import ProcessPoolExecutor
+from skopt import gp_minimize
+from skopt.space import Real, Integer
+from skopt.utils import use_named_args
 
 # Add parent directory to path to import modules
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
 # Import components from aco_search.py
-from aco_search import calculate_adaptive_parameters
 from aco_routing.aco import ACO
 from aco_routing.network import Network
 
@@ -52,7 +54,7 @@ class ACOTuner:
             self.G.add_edge(start, end, cost=float(weight))
         
         # Get baseline adaptive parameters
-        self.baseline_params = calculate_adaptive_parameters(self.G, self.destinations, self.edges)
+        self.baseline_params = 51*2, 1000, 51*2, 0.1, 1, 1
         
         # Unpack baseline parameters
         self.baseline_ant_max_steps, self.baseline_iterations, self.baseline_num_ants, \
@@ -85,8 +87,8 @@ class ACOTuner:
                   evaporation_rate=evaporation_rate, 
                   alpha=alpha, 
                   beta=beta, 
-                  mode=1, 
-                  ant_random_spawn=False)
+                  mode=2,
+                  )
         
         start_time = time.time()
         path, cost = aco.find_shortest_path(
@@ -259,15 +261,6 @@ class ACOTuner:
         """
         print("Starting Bayesian optimization...")
         
-        try:
-            from skopt import gp_minimize
-            from skopt.space import Real, Integer
-            from skopt.utils import use_named_args
-        except ImportError:
-            print("Error: scikit-optimize is required for Bayesian optimization.")
-            print("Please install it using: pip install scikit-optimize")
-            return []
-        
         # Define the search space
         space = [
             Integer(int(self.baseline_ant_max_steps * 0.5), int(self.baseline_ant_max_steps * 2.0), name='ant_max_steps'),
@@ -278,6 +271,9 @@ class ACOTuner:
             Real(max(0.01, self.baseline_alpha * 0.3), min(1.0, self.baseline_alpha * 3.0), name='alpha'),
             Real(max(0.01, self.baseline_beta * 0.3), min(2.0, self.baseline_beta * 3.0), name='beta')
         ]
+        # Store all evaluated parameters and results for later retrieval
+        evaluated_params = []
+        evaluated_results = []
         
         # Define the objective function
         @use_named_args(space)
@@ -295,14 +291,15 @@ class ACOTuner:
             print(f"Evaluating parameters: {params}")
             result = self.evaluate_params(params)
             
+            # Store parameters and result
+            evaluated_params.append(params.copy())
+            evaluated_results.append(result)
+            
             # Our objective is to minimize a combination of cost and failure rate
-            # If success_rate is 0, return a very high value
             if result['success_rate'] == 0:
                 return 1e6
             
-            # Otherwise, return a weighted combination of avg_cost and (1 - success_rate)
             objective_value = result['avg_cost'] + (1 - result['success_rate']) * 1000
-            
             print(f"Result: Avg Cost = {result['avg_cost']}, Success Rate = {result['success_rate']}, " 
                 f"Objective Value = {objective_value}")
                 
@@ -483,33 +480,32 @@ class ACOTuner:
         plt.close()
 
 def main():
-    for i in range(30):    
-        graph_file = f"Tests/TestCases/test_case_{i+1}.txt"
-        # Create ACO tuner
-        tuner = ACOTuner(graph_file, num_trials=3)
-        
-        # Run Bayesian optimization
-        bayes_results = tuner.run_bayesian_optimization(n_iterations=15)
-        tuner.visualize_results(bayes_results, "bayesian")
-        
-        # Print best parameters
-        best_params = bayes_results[0]
-        print("\nBest parameters from Bayesian optimization:")
-        print(f"Parameters: {best_params['params']}")
-        print(f"Average Cost: {best_params['avg_cost']}")
-        print(f"Success Rate: {best_params['success_rate']}")
-        print(f"Average Time: {best_params['avg_time']:.4f} seconds")
-        
-        # Generate Python code for the best parameters
-        params = best_params['params']
-        print("\nTo use these parameters in aco_search.py, replace the adaptive parameters with:")
-        print("# Override adaptive parameters with tuned values")
-        print(f"ant_max_steps = {params['ant_max_steps']}")
-        print(f"iterations = {params['iterations']}")
-        print(f"num_ants = {params['num_ants']}")
-        print(f"evaporation_rate = {params['evaporation_rate']}")
-        print(f"alpha = {params['alpha']}")
-        print(f"beta = {params['beta']}")
+    graph_file = f"Data/TSP_Test_case_4.txt"
+    # Create ACO tuner
+    tuner = ACOTuner(graph_file, num_trials=5)
+    
+    # Run Bayesian optimization
+    bayes_results = tuner.run_bayesian_optimization(n_iterations=15)
+    tuner.visualize_results(bayes_results, "bayesian")
+    
+    # Print best parameters
+    best_params = bayes_results[0]
+    print("\nBest parameters from Bayesian optimization:")
+    print(f"Parameters: {best_params['params']}")
+    print(f"Average Cost: {best_params['avg_cost']}")
+    print(f"Success Rate: {best_params['success_rate']}")
+    print(f"Average Time: {best_params['avg_time']:.4f} seconds")
+    
+    # Generate Python code for the best parameters
+    params = best_params['params']
+    print("\nTo use these parameters in aco_search.py, replace the adaptive parameters with:")
+    print("# Override adaptive parameters with tuned values")
+    print(f"ant_max_steps = {params['ant_max_steps']}")
+    print(f"iterations = {params['iterations']}")
+    print(f"num_ants = {params['num_ants']}")
+    print(f"evaporation_rate = {params['evaporation_rate']}")
+    print(f"alpha = {params['alpha']}")
+    print(f"beta = {params['beta']}")
         
 
 if __name__ == "__main__":

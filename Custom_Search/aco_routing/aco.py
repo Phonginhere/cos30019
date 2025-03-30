@@ -23,7 +23,8 @@ class ACO:
         alpha: float = 0.7,
         beta: float = 0.3,
         mode: int = 0,
-        min_scaling_factor: float = 0.001
+        min_scaling_factor: float = 0.01,
+        log_step : int= None,
     ):
         """Initialize the ACO (Ant Colony Optimization) algorithm.
         
@@ -35,6 +36,8 @@ class ACO:
             alpha: Pheromone bias (importance of pheromone trails)
             beta: Edge cost bias (importance of shorter paths)
             mode: Search mode (0: find any destination, 1: find all destinations, 2: TSP mode)
+            min_scaling_factor: Minimum pheromone scaling factor (0-1)
+            log_step: Number of iterations between logs
         """
         # Store all parameters
         self.graph = graph
@@ -45,6 +48,7 @@ class ACO:
         self.beta = beta
         self.mode = mode
         self.min_scaling_factor = min_scaling_factor
+        self.log_step = log_step
         
         # Initialize other fields
         self.search_ants = []
@@ -87,17 +91,17 @@ class ACO:
         for ant in self.search_ants:
             if ant.is_fit:
                 # Max Min Ant System (MMAS) pheromone update
-                if float(iteration) / float(self.num_iterations) < 0.75: # Both local and global best can update pheromones
+                if float(iteration) / float(self.num_iterations) < 0.5: # Both local and global best can update pheromones
                     ant.deposit_pheromones_on_path(elitist_param = 0) # Local pheromone update no elitist
 
                     if ant.path_cost <= self.best_path_cost:
-                        ant.deposit_pheromones_on_path(elitist_param = 1) # Elitist pheromone update
+                        ant.deposit_pheromones_on_path(elitist_param = 0.2) # Elitist pheromone update
 
                     max_pheromone = num_ants * ant.pheromone_deposit_weight/ant.path_cost
                 else:
                     if ant.path_cost <= self.best_path_cost:
-                        ant.deposit_pheromones_on_path(elitist_param = 1)
-                    max_pheromone = num_ants * ant.pheromone_deposit_weight/self.best_path_cost
+                        ant.deposit_pheromones_on_path(elitist_param = 0.2)
+                    max_pheromone = num_ants * ant.pheromone_deposit_weight/ant.path_cost
                 min_pheromone = self.min_scaling_factor * max_pheromone
         return max_pheromone, min_pheromone
                 
@@ -144,7 +148,10 @@ class ACO:
             
             # update pheromones after each iteration
             self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc)
-            print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
+            
+            # Logging 
+            if self.log_step != None and ((iteration + 1) % self.log_step == 0):
+                print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
 
     def find_shortest_path(
         self,
