@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import math
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+
+import matplotlib.colors as mcolors
+import numpy as np
 
 # Add the parent directory to the system path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -130,23 +135,28 @@ class GraphApi:
             path_nodes = set(shortest_path)
             all_nodes = list(self.graph.nodes())
             
-            # Draw non-path nodes first (in the background)
+            # Get max pheromone value for color normalization
+            max_pheromone = 0.0
+            for u, v in self.graph.get_edges():
+                pheromone = self.graph.edges.get((u, v), {}).get("pheromones", 0)
+                max_pheromone = max(max_pheromone, pheromone)
+            
+            # Ensure max_pheromone is not zero to avoid division by zero
+            max_pheromone = max(max_pheromone, 0.001)
+            
+            # Draw non-path nodes first (in the background) with 20% opacity
             non_path_nodes = [node for node in all_nodes if node not in path_nodes]
             non_path_xs = [self.graph.pos[node][0] for node in non_path_nodes if node in self.graph.pos]
             non_path_ys = [self.graph.pos[node][1] for node in non_path_nodes if node in self.graph.pos]
-            plt.scatter(non_path_xs, non_path_ys, s=700, c='skyblue', edgecolors='black', zorder=1)
+            plt.scatter(non_path_xs, non_path_ys, s=700, c='skyblue', edgecolors='black', alpha=0.2, zorder=1)
             
             # Draw path nodes on top (highlighted)
             path_xs = [self.graph.pos[node][0] for node in path_nodes if node in self.graph.pos]
             path_ys = [self.graph.pos[node][1] for node in path_nodes if node in self.graph.pos]
             plt.scatter(path_xs, path_ys, s=900, c='lightcoral', edgecolors='black', zorder=2)
             
-            # Draw all edges in the graph with low opacity
+            # Draw all edges in the graph with pheromone-based coloring
             for u, v in self.graph.get_edges():
-                # Skip if this is a path edge (will be drawn later)
-                if (u, v) in path_edges:
-                    continue
-                    
                 # Skip if either node position is missing
                 if u not in self.graph.pos or v not in self.graph.pos:
                     continue
@@ -154,8 +164,33 @@ class GraphApi:
                 x1, y1 = self.graph.pos[u]
                 x2, y2 = self.graph.pos[v]
                 
-                # Draw edge with low opacity
-                plt.plot([x1, x2], [y1, y2], color='gray', linewidth=2, alpha=0.3, zorder=0)
+                # Get pheromone value for this edge
+                pheromone = self.graph.edges.get((u, v), {}).get("pheromones", 0)
+                
+                # Calculate color based on pheromone level - red for high, green for low
+                # Normalize pheromone to [0, 1] range
+                normalized_pheromone = pheromone / max_pheromone
+                
+                # Create color: interpolate from green (low) to red (high)
+                # RGB interpolation from green (0.0, 0.8, 0.0) to red (1.0, 0.0, 0.0)
+                r = normalized_pheromone
+                g = 0.8 * (1 - normalized_pheromone)
+                b = 0.0
+                
+                # Set different opacity for path vs non-path edges
+                if (u, v) in path_edges:
+                    # For path edges: high opacity (0.7-1.0) based on pheromone strength
+                    alpha = 0.7 + 0.3 * normalized_pheromone
+                    line_width = 3
+                else:
+                    # For non-path edges: fixed low opacity (20%)
+                    alpha = 0.2
+                    line_width = 1
+                    
+                edge_color = (r, g, b)
+                
+                # Draw edge with pheromone-based color and opacity
+                plt.plot([x1, x2], [y1, y2], color=edge_color, linewidth=line_width, alpha=alpha, zorder=0)
                 
                 # Add arrow to show direction
                 dx = x2 - x1
@@ -165,68 +200,30 @@ class GraphApi:
                     0.1*dx, 0.1*dy, 
                     head_width=0.05, 
                     head_length=0.1, 
-                    fc='gray', ec='gray',
+                    fc=edge_color, ec=edge_color,
+                    alpha=alpha,
                     zorder=0
                 )
                 
-                # Add faded edge label for BOTH cost AND pheromone
-                label_x, label_y = x1 + 0.75*dx, y1 + 0.75*dy
-                
-                edge_data = self.graph.edges.get((u, v), None)
-                if edge_data:
-                    cost = edge_data.get("cost", 0)
-                    pheromone = edge_data.get("pheromones", 0)
-                    # Changed to display both cost and pheromone
-                    label = f"c:{cost}\np:{round(pheromone, 3)}"
-                    plt.text(label_x, label_y, label, fontsize=8, alpha=0.5,
-                            bbox=dict(facecolor='white', alpha=0.4, edgecolor='lightgrey'),
-                            ha='center', va='center',  # Center the text
-                            zorder=0)
+                # Only add labels to path edges
+                if (u, v) in path_edges:
+                    # Add edge label for cost and pheromone for path edges
+                    midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
+                    edge_data = None
+                    edge_pairs = [(u, v)]
                     
-            # Draw only the edges that are in the path
-            for i in range(len(shortest_path) - 1):
-                u, v = shortest_path[i], shortest_path[i + 1]
-                
-                # Skip if either node position is missing
-                if u not in self.graph.pos or v not in self.graph.pos:
-                    continue
-                    
-                x1, y1 = self.graph.pos[u]
-                x2, y2 = self.graph.pos[v]
-                
-                # Draw path edge
-                plt.plot([x1, x2], [y1, y2], color='red', linewidth=3, zorder=3)
-                
-                # Add arrow to show direction
-                dx = x2 - x1
-                dy = y2 - y1
-                plt.arrow(
-                    x1 + 0.8*dx, y1 + 0.8*dy, 
-                    0.1*dx, 0.1*dy, 
-                    head_width=0.2, 
-                    head_length=0.2, 
-                    fc='red', ec='red',
-                    zorder=4
-                )
-                
-                # Add edge label for cost
-                midx, midy = (x1 + x2) / 2, (y1 + y2) / 2
-                
-                edge_data = None
-                edge_pairs = [(u, v)]
-                
-                for edge_pair in edge_pairs:
-                    if edge_pair in self.graph.edges:
-                        edge_data = self.graph.edges[edge_pair]
-                        break
-                    
-                if edge_data:
-                    cost = edge_data.get("cost", 0)
-                    pheromone = edge_data.get("pheromones", 0)
-                    label = f"cost: {cost}\nphero: {round(pheromone, 3)}"
-                    plt.text(midx, midy, label, fontsize=8, fontweight='bold',
-                            bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
-                            zorder=5, ha='center', va='center')
+                    for edge_pair in edge_pairs:
+                        if edge_pair in self.graph.edges:
+                            edge_data = self.graph.edges[edge_pair]
+                            break
+                        
+                    if edge_data:
+                        cost = edge_data.get("cost", 0)
+                        pheromone = edge_data.get("pheromones", 0)
+                        label = f"cost: {cost}\nphero: {round(pheromone, 3)}"
+                        plt.text(midx, midy, label, fontsize=8, fontweight='bold',
+                                bbox=dict(facecolor='mistyrose', alpha=0.8, edgecolor='gray'),
+                                zorder=5, ha='center', va='center')
             
             # Add node labels for ALL nodes
             for node in all_nodes:
@@ -238,7 +235,9 @@ class GraphApi:
                 if node in path_nodes:
                     plt.text(x, y, node, fontsize=14, fontweight='bold', ha='center', va='center', zorder=6)
                 else:
-                    plt.text(x, y, node, fontsize=12, fontweight='normal', ha='center', va='center', zorder=6)
+                    # Use 20% opacity for unused node labels
+                    plt.text(x, y, node, fontsize=12, fontweight='normal', alpha=0.2, 
+                            ha='center', va='center', zorder=6)
             
             # Add grid
             plt.grid(True, linestyle='--', alpha=0.7)
@@ -248,17 +247,33 @@ class GraphApi:
             cost_str = f", Cost: {shortest_path_cost}" if shortest_path_cost is not None else ""
             plt.title(f"Shortest Path: {path_str}{cost_str}", fontsize=14)
             
-            # Add a legend with pheromone info
-            from matplotlib.lines import Line2D
+            # Create gradient legend
+            gradient = np.linspace(0, 1, 256)
+            gradient = np.vstack((gradient, gradient))
+            
+            # Create a custom colormap
+            cmap = mcolors.LinearSegmentedColormap.from_list(
+                'pheromone_cmap', [(0.0, 0.8, 0.0), (1.0, 0.0, 0.0)]
+            )
+            
+            # Legend elements
             legend_elements = [
-                Line2D([0], [0], color='red', lw=3, label='Path'),
                 Line2D([0], [0], marker='o', color='w', markerfacecolor='lightcoral', 
                     markersize=15, label='Path node'),
-                Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', 
-                    markersize=15, label='Unused node'),
-                Line2D([0], [0], color='gray', lw=2, alpha=0.3, label='Unused edge'),
+                Line2D([0], [0], marker='o', color='w', markerfacecolor='skyblue', alpha=0.2,
+                    markersize=15, label='Unused node (20% opacity)'),
+                Patch(facecolor='white', edgecolor='black', label='Pheromone Level:')
             ]
-            plt.legend(handles=legend_elements, loc='upper right')
+            
+            # Position the legend
+            legend = plt.legend(handles=legend_elements, loc='upper right')
+            
+            # Add the colorbar for pheromone levels
+            ax = plt.gca()
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, max_pheromone))
+            sm.set_array([])
+            cbar = plt.colorbar(sm, ax=ax, orientation='horizontal', pad=0.02, shrink=0.5)
+            cbar.set_label('Pheromone Level (Green: Low, Red: High, Unused paths at 20% opacity)')
             
             # Adjust layout
             plt.tight_layout()

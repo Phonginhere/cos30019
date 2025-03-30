@@ -105,7 +105,6 @@ class ACO:
                 min_pheromone = self.min_scaling_factor * max_pheromone
         return max_pheromone, min_pheromone
                 
-
     def _deploy_search_ants(self, source: str, destination: str, num_ants: int) -> None:
         for iteration in range(self.num_iterations):
             # Clear previous ants
@@ -152,9 +151,6 @@ class ACO:
             # Logging 
             if self.log_step != None and ((iteration + 1) % self.log_step == 0):
                 print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
-            
-            # Visulize 
-            self.graph_api.visualize_graph(self.best_path, self.best_path_cost)
 
     def find_shortest_path(
         self,

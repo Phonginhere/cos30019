@@ -15,7 +15,7 @@ from parser import parse_graph_file
 
 def main():
     # Get file path from command line argument if provided
-    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/TSP_Test_case_4.txt"
+    file_path = "Data/PathFinder-test.txt"
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -30,7 +30,7 @@ def main():
     # Pre-allocate graph memory
     G.graph = {node: [] for node in nodes}
     G.pos = nodes
-    print(nodes)
+    
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
@@ -39,7 +39,7 @@ def main():
     node_count = G.number_of_nodes()
     
     ant_max_steps = node_count * 2
-    iterations = 1000
+    iterations = 100
     num_ants = node_count 
     alpha = 3.5
     beta = 2.5
@@ -52,7 +52,7 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
-              mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
+              mode=1, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
               log_step=10 # Log every 10 iterations
     )
 
@@ -81,7 +81,7 @@ def main():
         print(f"{path_str}")
         print(f"{aco_cost}")
         
-        # aco.graph_api.visualize_graph(aco_path, aco_cost)
+        aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
