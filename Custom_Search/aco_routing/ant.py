@@ -108,7 +108,7 @@ class Ant:
                 edge_cost = 0.001  # Small value instead of zero
                 
             total += utils.compute_edge_desirability(
-                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta
+                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta, self.mode
             )
 
         return total
@@ -148,7 +148,7 @@ class Ant:
                 edge_cost = 0.001  # Small value instead of zero
 
             current_edge_desirability = utils.compute_edge_desirability(
-                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta
+                edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta, self.mode
             )
             probabilities[neighbor] = current_edge_desirability / all_edges_desirability
 

@@ -36,10 +36,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # Calculate average node degree
     avg_degree = edge_count / node_count
     
-    # Calculate graph diameter estimate (approximate longest path)
-    diameter_estimate = int(max(5, min(node_count // 2, 2 * (1 + node_count / max(1, avg_degree)))))
-    
-    # ==== TSP OPTIMIZED PARAMETERS ====
+    # ==== LARGE SCALE OPTIMIZED PARAMETERS ====
     
     # Iterations: Between 300-1000 based on complexity
     problem_complexity = (node_count * 0.7) + (edge_count * 0.3) + (avg_degree * 5)
@@ -60,7 +57,6 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     
     # Calculate edge weight statistics for parameter tuning
     weights = [weight for (_, _), weight in edges.items()]
-    weight_range = max(weights) - min(weights) if weights else 0
     weight_variance = sum((w - sum(weights)/len(weights))**2 for w in weights)/len(weights) if weights else 0
     weight_uniformity = weight_variance / (max(weights)**2) if weights and max(weights) > 0 else 0
     
@@ -82,8 +78,7 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     evaporation_rate = max(0.05, min(0.3, evaporation_rate))
     
     # ALPHA (pheromone importance) and BETA (heuristic importance) optimization
-    # For TSP, we want a balance between exploration and exploitation
-    alpha = 0.4  # Medium pheromone influence
+    alpha = 1.0  # Medium pheromone influence
     beta = 1.0   # Strong heuristic guidance
     
     # Adjust alpha/beta based on graph size
@@ -103,14 +98,14 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         beta *= 0.9   # Heuristic less reliable in sparse graphs
     
     # Final clamping to ensure values stay in reasonable ranges
-    alpha = max(0.2, min(0.7, alpha))
-    beta = max(0.7, min(1.5, beta))
+    alpha = max(0.5, min(2, alpha))
+    beta = max(0.5, min(2, beta))
     
     return ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta
 
 def main():
     # Get file path from command line argument if provided
-    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/TSP_Test_case_2.txt"
+    file_path = sys.argv[1] if len(sys.argv) > 1 else "Data/PathFinder-test.txt"
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -132,6 +127,7 @@ def main():
     
     # Calculate adaptive parametersg
     ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
+    print(f"Adaptive Parameters: ant_max_steps={ant_max_steps}, iterations={iterations}, num_ants={num_ants}, evaporation_rate={evaporation_rate}, alpha={alpha}, beta={beta}")
     
     # Initialize ACO with optimized parameters
     aco = ACO(G, 

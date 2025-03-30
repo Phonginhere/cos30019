@@ -8,7 +8,8 @@ def compute_edge_desirability(
     edge_cost: float, 
     edge_distance: float,
     alpha: float, 
-    beta: float
+    beta: float,
+    mode: int = 0
 ) -> float:
     """Compute the desirability with caching for better performance"""
     # Cache key for this computation
@@ -22,8 +23,10 @@ def compute_edge_desirability(
     if edge_cost == 0:
         edge_cost = 1e-10
     
-    # result = (pheromone_value ** alpha) * ((1 / edge_cost + edge_distance) ** beta)
-    result = (pheromone_value ** alpha) * ((edge_distance / edge_cost) ** beta)
+    if mode == 2:  # TSP mode
+        result = (pheromone_value ** alpha) * ((1 / edge_cost ) ** beta)
+    else:
+        result = (pheromone_value ** alpha) * ((edge_distance / edge_cost) ** beta)
     
     # Store in cache (but limit cache size)
     if len(_desirability_cache) < 10000:  # Prevent memory issues
