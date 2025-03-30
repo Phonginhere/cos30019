@@ -102,7 +102,6 @@ class ACO:
                         ant.deposit_pheromones_on_path(elitist_param = 1)
                     max_pheromone = num_ants * ant.pheromone_deposit_weight/self.best_path_cost
                 min_pheromone = self.min_scaling_factor * max_pheromone
-                print(f"Iteration {iteration}: Ant path cost: {ant.path_cost}, Max pheromone: {max_pheromone}, Min pheromone: {min_pheromone}")
         return max_pheromone, min_pheromone
                 
 
@@ -133,40 +132,6 @@ class ACO:
             
             # Evaporate pheromones after each iteration
             self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc) #Global pheromone update
-
-    def _deploy_solution_ant(self, source: str, destination: str) -> Ant:
-        """Deploy the pheromone-greedy solution to find the shortest path
-
-        Args:
-            source (str): The source node in the graph
-            destination (str): The destination node in the graph
-
-        Returns:
-            Ant: The solution ant with the computed shortest path and cost
-        """
-        # Otherwise, create a new solution ant
-        ant = Ant(
-            self.graph_api,
-            source,
-            destination,
-            is_solution_ant=True,
-            # Use higher beta for solution ant to favor shorter paths
-            beta=self.beta,
-            alpha=self.alpha*2,
-            mode=self.mode
-        )
-        
-        steps = 0
-        solution_max_steps = self.ant_max_steps * 2  # Give solution ant more steps
-        
-        while not ant.reached_destination() and steps < solution_max_steps:
-            ant.take_step()
-            steps += 1
-        
-        if not ant.reached_destination():
-            raise Exception(f"Solution ant could not reach destination after {steps} steps.")
-            
-        return ant
 
     def find_shortest_path(
         self,

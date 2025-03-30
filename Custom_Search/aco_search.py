@@ -104,13 +104,13 @@ def calculate_adaptive_parameters(graph, destinations, edges):
     # ALPHA (pheromone importance) and BETA (heuristic importance) optimization
     # REBALANCED to give beta more influence
     if node_count > 25 or len(destinations) > 5:
-        alpha = 0.3  # REDUCED from 0.6
+        alpha = 0.6  
         beta = 1.0   # Higher beta for better heuristic guidance
     elif node_count < 10 and len(destinations) <= 2:
         alpha = 0.1  # Less pheromone influence for simple problems
         beta = 0.8   # Still maintain good heuristic guidance
     else:
-        alpha = 0.2  # REDUCED from 0.3
+        alpha = 0.3  
         beta = 0.9   # Higher beta for better path finding
     
     # Adjust alpha/beta based on graph density
@@ -130,10 +130,6 @@ def calculate_adaptive_parameters(graph, destinations, edges):
         evaporation_rate = max(0.05, evaporation_rate * 0.8)
         alpha = min(0.4, alpha * 1.1)  # Cap at reasonable value
         beta = max(0.8, beta * 1.1)     # Ensure sufficient heuristic influence
-    
-    # Ensure alpha is always lower than beta for better path finding
-    if alpha >= beta:
-        beta = alpha * 1.5
     
     # Hard caps to prevent extreme values
     ant_max_steps = min(300, ant_max_steps)
@@ -167,13 +163,7 @@ def main():
         G.add_edge(start, end, cost=float(weight))
     
     # Calculate adaptive parametersg
-    # ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
-    ant_max_steps = 200
-    iterations = 200
-    num_ants = 100
-    evaporation_rate = 0.1
-    alpha = 1
-    beta = 2
+    ant_max_steps, iterations, num_ants, evaporation_rate, alpha, beta = calculate_adaptive_parameters(G, destinations, edges)
     
     print(f"Adaptive parameters: ant_max_steps={ant_max_steps}, iterations={iterations}, num_ants={num_ants}")
     print(f"ACO tuning: evaporation_rate={evaporation_rate:.2f}, alpha={alpha:.2f}, beta={beta:.2f}")
