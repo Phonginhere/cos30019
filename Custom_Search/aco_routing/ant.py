@@ -227,5 +227,5 @@ class Ant:
     def deposit_pheromones_on_path(self, elitist_param) -> None:
         for i in range(len(self.path) - 1):
             u, v = self.path[i], self.path[i + 1]
-            new_pheromone_value = self.pheromone_deposit_weight / self.path_cost
-            self.graph_api.deposit_pheromones(u, v, new_pheromone_value, elitist_param/self.path_cost)
+            deposit_pheromone_value = self.pheromone_deposit_weight / self.path_cost
+            self.graph_api.deposit_pheromones(u, v, deposit_pheromone_value, elitist_param/self.path_cost)
