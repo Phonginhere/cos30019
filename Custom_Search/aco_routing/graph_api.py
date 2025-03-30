@@ -53,7 +53,6 @@ class GraphApi:
             self.graph.edges[(u, v)]["delta_pheromones"] += delta_pheromone
             
     def update_pheromones(self, max_pheromon, min_pheromon, current_acc, current_d_acc) -> None:
-        """Evaporate pheromones on all edges of the graph."""
         for u, v in self.graph.get_edges():
             if (u, v) in self.graph.edges:
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
@@ -105,7 +104,7 @@ class GraphApi:
     def get_pheromone_levels(self) -> Dict:
         """Get all pheromone levels in the graph for debugging"""
         result = {}
-        for (u, v) in self.graph.edges:
+        for (u, v) in self.graph.get_edges():
             result[(u, v)] = self.get_edge_pheromones(u, v)
         return result
 

@@ -18,7 +18,6 @@ class Ant:
         destination: Union[str, List[str], Set[str]] = None,
         alpha: float = 0.7,
         beta: float = 0.3,
-        is_solution_ant: bool = False,
         mode: int = 0,
     ):
         """Initialize an ant for ACO algorithm.
@@ -29,7 +28,6 @@ class Ant:
             destination: The destination node(s) to reach
             alpha: Pheromone bias (importance of pheromone trails)
             beta: Edge cost bias (importance of shorter paths)
-            is_solution_ant: Whether this ant is the final solution finder
             mode: Operation mode (0: any destination, 1: all destinations)
         """
         self.graph_api = graph_api
@@ -41,7 +39,6 @@ class Ant:
         self.path = []
         self.path_cost = 0.0
         self.is_fit = False
-        self.is_solution_ant = is_solution_ant
         self.visited_destinations = set()
         self.mode = mode
         self.pheromone_deposit_weight = 1 # Weight for pheromone deposit
@@ -58,22 +55,25 @@ class Ant:
     def reached_destination(self) -> bool:
         """Returns if the ant has reached all specified destinations
         
-        For single destination: returns True when current node equals destination
-        For multiple destinations: returns True when all destinations have been visited
-        
-        Returns:
-            bool: True if all destinations have been reached
+        For TSP mode (2): returns True when all nodes have been visited and ant has returned to source
         """
-                
         # Update visited destinations
         if self.current_node in self.destination:
             self.visited_destinations.add(self.current_node)
+        
+        if self.mode == 2:  # TSP mode
+            # Get all nodes in the graph
+            all_nodes = set(self.graph_api.get_all_nodes())
             
-        # Check if all destinations have been visited
-        if self.mode == 0:
+            # Check if we've visited all nodes and returned to source
+            has_visited_all = len(self.visited_nodes) >= len(all_nodes)
+            
+            # For a valid TSP tour, we need to have visited all nodes and returned to our starting point
+            return has_visited_all and self.current_node == self.source
+        elif self.mode == 0:
             return len(self.visited_destinations) > 0
         else:
-            return self.visited_destinations == self.destination
+            return self.visited_destinations == set(self.destination)
 
     def _get_unvisited_neighbors(self) -> List[str]:
         """Get unvisited neighbors with optimized set lookup"""
@@ -155,43 +155,40 @@ class Ant:
         return probabilities
 
     def _choose_next_node(self) -> Union[str, None]:
-        """Choose the next node to be visited by the ant
-
-        Returns:
-            [str, None]: The computed next node to be visited by the ant or None if no possible moves
-        """
-        unvisited_neighbors = self._get_unvisited_neighbors()
+        """Choose the next node to be visited by the ant"""
+        if self.mode == 2:  # TSP mode
+            all_nodes = set(self.graph_api.get_all_nodes())
+            unvisited = all_nodes - self.visited_nodes
+            
+            # If we've visited all nodes, try to return to source
+            if len(unvisited) == 0:
+                if self.source in self.graph_api.get_neighbors(self.current_node):
+                    return self.source
+                return None
+                
+            # Prioritize unvisited nodes, especially if few remain
+            unvisited_neighbors = [n for n in self.graph_api.get_neighbors(self.current_node) 
+                                if n in unvisited]
+            
+            # If no unvisited neighbors but we haven't visited all nodes yet,
+            # we may need to revisit some nodes to reach the remaining unvisited ones
+            if not unvisited_neighbors and unvisited:
+                # Try to find a path to any unvisited node
+                neighbors = self.graph_api.get_neighbors(self.current_node)
+                if neighbors:
+                    return neighbors[0]  # Go to any neighbor to continue exploration
+                return None
+        else:
+            # Original implementation for other modes
+            unvisited_neighbors = self._get_unvisited_neighbors()
 
         # Check if ant has no possible nodes to move to
         if len(unvisited_neighbors) == 0:
-            # If we reached the destination, it's OK to have no more moves
-            if self.current_node == self.destination:
-                self.is_fit = True
-                return None
-            
             return None
-
-        if self.is_solution_ant:
-            # The final/solution ant greedily chooses the next node with the highest pheromone value
-            best_node = None
-            best_pheromone = -1
-            
-            for neighbor in unvisited_neighbors:
-                pheromone = self.graph_api.get_edge_pheromones(self.current_node, neighbor)
-                if pheromone > best_pheromone:
-                    best_pheromone = pheromone
-                    best_node = neighbor
-                    
-            return best_node
 
         # For regular ants, use probabilistic selection
         probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
-        
-        # Pick the next node based on the roulette wheel selection technique
         return utils.roulette_wheel_selection(probabilities)
-
-        # # Pick the next node based on the roulette wheel selection technique
-        # return utils.roulette_wheel_selection(probabilities)
 
     def take_step(self) -> None:
         """Compute and update the ant position"""
@@ -207,7 +204,16 @@ class Ant:
 
         # Check if ant is stuck at current node or has reached all destinations
         if not next_node:
-            if self.reached_destination():
+            if self.mode == 2:
+                # For TSP: check if we've visited all nodes and returned to source
+                all_nodes = set(self.graph_api.get_all_nodes())
+                if len(self.visited_nodes) == len(all_nodes) and self.current_node == self.source:
+                    # Complete successful tour
+                    self.is_fit = True
+                else:
+                    # Incomplete tour - not fit
+                    self.is_fit = False
+            elif self.reached_destination():
                 self.is_fit = True
             return
 
@@ -216,9 +222,9 @@ class Ant:
         self.path_cost += self.graph_api.get_edge_cost(self.current_node, next_node)
         self.current_node = next_node
         
-        # Update visited_destinations if we've reached a destination
-        if self.current_node in self.destination:
-            self.visited_destinations.add(self.current_node)
+        # For TSP mode, update fitness immediately if we've completed a tour
+        if self.mode == 2 and self.reached_destination():
+            self.is_fit = True
 
     def deposit_pheromones_on_path(self, elitist_param) -> None:
         for i in range(len(self.path) - 1):

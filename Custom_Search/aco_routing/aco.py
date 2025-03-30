@@ -19,7 +19,6 @@ class ACO:
         graph: Network,
         ant_max_steps: int,
         num_iterations: int,
-        ant_random_spawn: bool = True,
         evaporation_rate: float = 0.1,
         alpha: float = 0.7,
         beta: float = 0.3,
@@ -32,17 +31,15 @@ class ACO:
             graph: Network object containing the graph structure
             ant_max_steps: Maximum number of steps an ant is allowed to take
             num_iterations: Number of cycles/waves of search ants to be deployed
-            ant_random_spawn: Indicates if search ants should spawn at random nodes
             evaporation_rate: Rate at which pheromones evaporate (0-1)
             alpha: Pheromone bias (importance of pheromone trails)
             beta: Edge cost bias (importance of shorter paths)
-            mode: Search mode (0: find any destination, 1: find all destinations)
+            mode: Search mode (0: find any destination, 1: find all destinations, 2: TSP mode)
         """
         # Store all parameters
         self.graph = graph
         self.ant_max_steps = ant_max_steps
         self.num_iterations = num_iterations
-        self.ant_random_spawn = ant_random_spawn
         self.evaporation_rate = evaporation_rate
         self.alpha = alpha
         self.beta = beta
@@ -110,28 +107,44 @@ class ACO:
             # Clear previous ants
             self.search_ants.clear()
             
-            # Create new ants (only create what we need)
+            # Create new ants
             for _ in range(num_ants):
-                spawn_point = source
-                if self.ant_random_spawn:
+                if self.mode == 2:  # TSP mode
+                    # For TSP, randomly select a spawn point
                     spawn_point = random.choice(list(self.graph.nodes()))
-                
-                ant = Ant(
-                    self.graph_api,
-                    spawn_point,
-                    destination,
-                    alpha=self.alpha,
-                    beta=self.beta,
-                    mode=self.mode
-                )
-                self.search_ants.append(ant)
+                    
+                    # All nodes are potential destinations in TSP
+                    all_nodes = list(self.graph.nodes())
+                    
+                    # Create ant starting at random node
+                    ant = Ant(
+                        self.graph_api,
+                        spawn_point,  # Random spawn
+                        all_nodes,    # All nodes are destinations
+                        alpha=self.alpha,
+                        beta=self.beta,
+                        mode=self.mode
+                    )
+                    self.search_ants.append(ant)
+                else:
+                    spawn_point = source
+                    ant = Ant(
+                        self.graph_api,
+                        spawn_point,
+                        destination,
+                        alpha=self.alpha,
+                        beta=self.beta,
+                        mode=self.mode
+                    )
+                    self.search_ants.append(ant)
 
-            # Deploy ants
+            # Rest of method remains the same
             self._deploy_forward_search_ants()
             max_pheromon, min_pheromon = self._deploy_backward_search_ants(iteration, num_ants)        
             
-            # Evaporate pheromones after each iteration
-            self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc) #Global pheromone update
+            # update pheromones after each iteration
+            self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc)
+            print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
 
     def find_shortest_path(
         self,
@@ -139,23 +152,22 @@ class ACO:
         destination: str,
         num_ants: int,
     ) -> Tuple[List[str], float]:
-        """Finds the shortest path from the source to the destination in the graph
-
-        Args:
-            source (str): The source node in the graph
-            destination (str): The destination node in the graph
-            num_ants (int): The number of search ants to be deployed
-
-        Returns:
-            List[str]: The shortest path found by the ants
-            float: The cost of the computed shortest path
+        """Finds the shortest path according to the current mode
+        
+        In TSP mode (2): Finds a tour that visits all nodes once and returns to source
         """
         # Verify the graph has the required nodes
         if source not in self.graph.nodes():
             raise ValueError(f"Source node {source} not in graph")
-        for dest in destination:
-            if dest not in self.graph.nodes():
-                raise ValueError(f"Destination node {dest} not in graph")
+        
+        if self.mode != 2:  # Only check destination for non-TSP modes
+            for dest in destination:
+                if dest not in self.graph.nodes():
+                    raise ValueError(f"Destination node {dest} not in graph")
+        
+        # Reset best path and cost
+        self.best_path = []
+        self.best_path_cost = float("inf")
         
         # Do the actual search
         self._deploy_search_ants(
@@ -164,4 +176,19 @@ class ACO:
             num_ants,
         )
         
+        # For TSP mode, validate the path includes all nodes
+        if self.mode == 2 and self.best_path:
+            all_nodes = set(self.graph.nodes())
+            path_nodes = set(self.best_path)
+            
+            # Check for missing nodes
+            missing_nodes = all_nodes - path_nodes
+            if missing_nodes:
+                print(f"Warning: Current best TSP tour is missing nodes: {missing_nodes}")
+                
+                # If we found any valid path, ensure source is last node
+                if self.best_path and self.best_path[-1] != self.best_path[0]:
+                    # Ensure tour returns to starting point
+                    self.best_path.append(self.best_path[0])
+                
         return self.best_path, self.best_path_cost
