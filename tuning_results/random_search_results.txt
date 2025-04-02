@@ -1,0 +1,76 @@
+ACO Parameter Tuning Results
+Graph: Tests/TestCases/test_case_9.txt
+Origin: 1, Destinations: {'3'}
+Baseline parameters: (90, 15, 10, 0.08000000000000002, 0.1, 0.8)
+
+Top 10 Parameter Sets:
+Rank 1:
+  Parameters: {'ant_max_steps': 90, 'iterations': 15, 'num_ants': 10, 'evaporation_rate': 0.08000000000000002, 'alpha': 0.1, 'beta': 0.8}
+  Avg Cost: 3.0
+  Success Rate: 1.0
+  Avg Time: 0.0017 seconds
+  Min Cost: 3.0
+
+Rank 2:
+  Parameters: {'ant_max_steps': 125, 'iterations': 16, 'num_ants': 6, 'evaporation_rate': 0.16, 'alpha': 0.12, 'beta': 0.77}
+  Avg Cost: 3.3333333333333335
+  Success Rate: 1.0
+  Avg Time: 0.0010 seconds
+  Min Cost: 3.0
+
+Rank 3:
+  Parameters: {'ant_max_steps': 82, 'iterations': 28, 'num_ants': 8, 'evaporation_rate': 0.16, 'alpha': 0.13, 'beta': 0.38}
+  Avg Cost: 3.3333333333333335
+  Success Rate: 1.0
+  Avg Time: 0.0020 seconds
+  Min Cost: 3.0
+
+Rank 4:
+  Parameters: {'ant_max_steps': 176, 'iterations': 25, 'num_ants': 6, 'evaporation_rate': 0.04, 'alpha': 0.07, 'beta': 0.33}
+  Avg Cost: 3.3333333333333335
+  Success Rate: 1.0
+  Avg Time: 0.0024 seconds
+  Min Cost: 3.0
+
+Rank 5:
+  Parameters: {'ant_max_steps': 130, 'iterations': 11, 'num_ants': 14, 'evaporation_rate': 0.17, 'alpha': 0.07, 'beta': 0.78}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0013 seconds
+  Min Cost: 3.0
+
+Rank 6:
+  Parameters: {'ant_max_steps': 65, 'iterations': 8, 'num_ants': 11, 'evaporation_rate': 0.24, 'alpha': 0.18, 'beta': 0.83}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0007 seconds
+  Min Cost: 3.0
+
+Rank 7:
+  Parameters: {'ant_max_steps': 142, 'iterations': 12, 'num_ants': 14, 'evaporation_rate': 0.16, 'alpha': 0.2, 'beta': 0.99}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0013 seconds
+  Min Cost: 3.0
+
+Rank 8:
+  Parameters: {'ant_max_steps': 75, 'iterations': 10, 'num_ants': 19, 'evaporation_rate': 0.22, 'alpha': 0.21, 'beta': 1.1}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0017 seconds
+  Min Cost: 3.0
+
+Rank 9:
+  Parameters: {'ant_max_steps': 109, 'iterations': 26, 'num_ants': 12, 'evaporation_rate': 0.09, 'alpha': 0.27, 'beta': 0.6}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0027 seconds
+  Min Cost: 3.0
+
+Rank 10:
+  Parameters: {'ant_max_steps': 134, 'iterations': 23, 'num_ants': 17, 'evaporation_rate': 0.03, 'alpha': 0.16, 'beta': 0.93}
+  Avg Cost: 3.6666666666666665
+  Success Rate: 1.0
+  Avg Time: 0.0030 seconds
+  Min Cost: 3.0
+
