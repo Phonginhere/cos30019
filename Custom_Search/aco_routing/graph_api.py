@@ -70,7 +70,7 @@ class GraphApi:
             if (u, v) in self.graph.edges:
                 # Gradient descent update using Adadelta Optimizer
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
-                gt = pheromones - self.graph.edges[(u, v)].get("delta_pheromones", 0.0) / self.evaporation_rate
+                gt = pheromones - (self.graph.edges[(u, v)].get("delta_pheromones", 0.0)) * self.pheromone_deposit_weight
                 acc = self.gamma * current_acc + (1 - self.gamma) * gt * gt
                 update = (gt * math.sqrt(current_d_acc + self.epsilon)) / (math.sqrt(acc + self.epsilon))
                 new_pheromone = pheromones - update

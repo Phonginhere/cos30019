@@ -89,9 +89,6 @@ class ACO:
         return iteration_best_path_cost
             
     def _deploy_backward_search_ants(self, iteration, iteration_best_path_cost) -> (float, float):
-        # Incase no fit ant
-        max_pheromone = 0.0
-        min_pheromone = 0.0
         for ant in self.search_ants:
             if ant.is_fit and ant.path_cost <= iteration_best_path_cost:
                 # Max Min Ant System (MMAS) pheromone update
@@ -100,15 +97,14 @@ class ACO:
 
                     if ant.path_cost == self.best_path_cost:
                         ant.deposit_pheromones_on_path(elitist_param = 0.2) # Elitist pheromone update
-
-                    max_pheromone = self.graph_api.pheromone_deposit_weight/ant.path_cost
                 else:
                     # Only global best can update pheromones
                     if ant.path_cost == self.best_path_cost:
                         ant.deposit_pheromones_on_path(elitist_param = 0.2)
                     self.graph_api.deposit_pheromones_for_path(self.best_path)
-                    max_pheromone = self.graph_api.pheromone_deposit_weight/self.best_path_cost
-                min_pheromone = self.min_scaling_factor * max_pheromone
+                    
+        max_pheromone = self.graph_api.pheromone_deposit_weight/self.best_path_cost
+        min_pheromone = self.min_scaling_factor * max_pheromone
         return max_pheromone, min_pheromone
                 
     def _deploy_search_ants(self, source: str, destination: str, num_ants: int) -> None:
