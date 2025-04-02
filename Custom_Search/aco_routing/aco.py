@@ -2,6 +2,8 @@ import random
 from typing import List, Tuple
 import os
 import sys
+import matplotlib.pyplot as plt
+import time
 
 # Import paths setup
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,7 +13,7 @@ sys.path.append(parent_dir)
 from aco_routing.ant import Ant
 from aco_routing.graph_api import GraphApi
 from aco_routing.network import Network
-
+from aco_routing.aco_visualizer import ACOVisualizer  # Import the new visualizer
 
 class ACO:
     def __init__(
@@ -24,7 +26,9 @@ class ACO:
         beta: float = 0.3,
         mode: int = 0,
         min_scaling_factor: float = 0.01,
-        log_step : int= None,
+        log_step: int = None,
+        visualize: bool = False,
+        visualization_step: int = 1
     ):
         """Initialize the ACO (Ant Colony Optimization) algorithm.
         
@@ -35,9 +39,11 @@ class ACO:
             evaporation_rate: Rate at which pheromones evaporate (0-1)
             alpha: Pheromone bias (importance of pheromone trails)
             beta: Edge cost bias (importance of shorter paths)
-            mode: Search mode (0: find any destination, 1: find all destinations, 2: TSP mode)
+            mode: Search mode (0: find any destination, 1: all destinations, 2: TSP mode)
             min_scaling_factor: Minimum pheromone scaling factor (0-1)
             log_step: Number of iterations between logs
+            visualize: Whether to visualize the algorithm progress
+            visualization_step: Frequency of visualization updates
         """
         # Store all parameters
         self.graph = graph
@@ -49,6 +55,8 @@ class ACO:
         self.mode = mode
         self.min_scaling_factor = min_scaling_factor
         self.log_step = log_step
+        self.visualize = visualize
+        self.visualization_step = visualization_step
         
         # Initialize other fields
         self.search_ants = []
@@ -63,6 +71,11 @@ class ACO:
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
         
+        # Initialize visualization if needed
+        self.visualizer = None
+        if self.visualize:
+            self.visualizer = ACOVisualizer(self.graph_api)
+        
         # Initialize all edges of the graph with a stochastic pheromone value and delta pheromone of 0.0
         max_temp = 1.0
         min_temp = max_temp * self.min_scaling_factor
@@ -74,9 +87,16 @@ class ACO:
 
     def _deploy_forward_search_ants(self) -> float:
         iteration_best_path_cost = float("inf")
-        for ant in self.search_ants:
+        
+        # Dictionary to track ant positions for visualization
+        ant_positions = {}
+        
+        for i, ant in enumerate(self.search_ants):
+            # Track initial position
+            ant_positions[f"ant_{i}"] = ant.current_node
+            
             # Process each ant until it reaches destination or max steps
-            for _ in range(self.ant_max_steps):
+            for step in range(self.ant_max_steps):
                 if ant.reached_destination():
                     ant.is_fit = True
                     if ant.path_cost <= self.best_path_cost:
@@ -85,20 +105,23 @@ class ACO:
                     if ant.path_cost <= iteration_best_path_cost:
                         iteration_best_path_cost = ant.path_cost
                     break
+                    
                 ant.take_step()
-        return iteration_best_path_cost
+                # Update ant position for visualization
+                ant_positions[f"ant_{i}"] = ant.current_node
+        
+        # Return ant positions for visualization
+        return iteration_best_path_cost, ant_positions
             
     def _deploy_backward_search_ants(self, iteration, iteration_best_path_cost) -> (float, float):
         for ant in self.search_ants:
             if ant.is_fit and ant.path_cost <= iteration_best_path_cost:
                 # Max Min Ant System (MMAS) pheromone update
-                if float(iteration) / float(self.num_iterations) < 0.75: # Both local and global best can update pheromones
-                    ant.deposit_pheromones_on_path(elitist_param = 0) # Local pheromone update no elitist
-
+                if float(iteration) / float(self.num_iterations) < 0.75:
+                    ant.deposit_pheromones_on_path(elitist_param = 0)
                     if ant.path_cost == self.best_path_cost:
-                        ant.deposit_pheromones_on_path(elitist_param = 0.2) # Elitist pheromone update
+                        ant.deposit_pheromones_on_path(elitist_param = 0.2)
                 else:
-                    # Only global best can update pheromones
                     if ant.path_cost == self.best_path_cost:
                         ant.deposit_pheromones_on_path(elitist_param = 0.2)
                     self.graph_api.deposit_pheromones_for_path(self.best_path)
@@ -117,11 +140,7 @@ class ACO:
                 if self.mode == 2:  # TSP mode
                     # For TSP, randomly select a spawn point
                     spawn_point = random.choice(list(self.graph.nodes()))
-                    
-                    # All nodes are potential destinations in TSP
                     all_nodes = list(self.graph.nodes())
-                    
-                    # Create ant starting at random node
                     ant = Ant(
                         self.graph_api,
                         spawn_point,  # Random spawn
@@ -143,16 +162,20 @@ class ACO:
                     )
                     self.search_ants.append(ant)
 
-            # Rest of method remains the same
-            iteration_best_path_cost = self._deploy_forward_search_ants()
+            # Deploy ants and get progress
+            iteration_best_path_cost, ant_positions = self._deploy_forward_search_ants()
             max_pheromon, min_pheromon = self._deploy_backward_search_ants(iteration, iteration_best_path_cost)        
             
-            # update pheromones after each iteration
+            # Update pheromones after each iteration
             self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc)
             
             # Logging 
-            if self.log_step != None and ((iteration + 1) % self.log_step == 0):
+            if self.log_step is not None and ((iteration + 1) % self.log_step == 0):
                 print(f"Iteration {iteration + 1}/{self.num_iterations} completed. Best path cost: {self.best_path_cost:.2f}")
+            
+            # Visualization update
+            if self.visualize and (iteration % self.visualization_step == 0):
+                self.visualizer.update_state(iteration + 1, self.best_path, self.best_path_cost, ant_positions)
 
     def find_shortest_path(
         self,
@@ -162,7 +185,15 @@ class ACO:
     ) -> Tuple[List[str], float]:
         """Finds the shortest path according to the current mode
         
-        In TSP mode (2): Finds a tour that visits all nodes once and returns to source
+        Args:
+            source: Source node
+            destination: Destination node or list of nodes
+            num_ants: Number of ants to deploy
+            save_animation: Whether to save the visualization as an animation
+            animation_filename: Filename for the animation
+            
+        Returns:
+            Tuple containing the best path and its cost
         """
         # Verify the graph has the required nodes
         if source not in self.graph.nodes():
@@ -198,4 +229,6 @@ class ACO:
                 if self.best_path and self.best_path[-1] != self.best_path[0]:
                     # Ensure tour returns to starting point
                     self.best_path.append(self.best_path[0])
+
+            
         return self.best_path, self.best_path_cost

@@ -76,20 +76,23 @@ def main():
     # print(f"Average cost: {sum(cost_results) / len(cost_results)}")
             
     # Output results
+    # Output results with visualization enabled
     aco = ACO(G, 
         ant_max_steps=ant_max_steps,
         num_iterations=iterations, 
         evaporation_rate=evaporation_rate, 
         alpha=alpha, 
         beta=beta, 
-        mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
-        log_step=10
+        mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
+        log_step=None, # Setting log, Int or None
+        visualize=True,  # Enable visualization
+        visualization_step=10  # Update visualization every 5 iterations
     )
 
     aco_path, aco_cost = aco.find_shortest_path(
         source=origin,
         destination=destinations,
-        num_ants=num_ants
+        num_ants=num_ants,
     )
     
     if not aco_path:
@@ -110,7 +113,8 @@ def main():
         print(f"{path_str}")
         print(f"{aco_cost}")
         
-        aco.graph_api.visualize_graph(aco_path, aco_cost)
+        # Only visualize final result
+        # aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
