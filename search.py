@@ -83,7 +83,7 @@ def main():
             sys.exit(1)
     
     elif algorithm == "BFS":
-        print("Breadth-First Search algorithm method selected")
+        print("Breadth-First Search")
         # Add BFS implementation here
         try:
             # Get paths
@@ -139,7 +139,7 @@ def main():
         print("Greedy Best-First Search algorithm selected (not implemented yet)")
         
     elif algorithm == "CUS1":
-        print("Dijkstras algorithm method selected")
+        print("CUS1")
         # Add Uniform Cost Search implementation here
         try:
             # Get paths
