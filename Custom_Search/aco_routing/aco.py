@@ -86,10 +86,9 @@ class ACO:
                         iteration_best_path_cost = ant.path_cost
                     break
                 ant.take_step()
-        print(f"Best path cost in iteration: {iteration_best_path_cost:.2f}")
         return iteration_best_path_cost
             
-    def _deploy_backward_search_ants(self, iteration, num_ants, iteration_best_path_cost) -> (float, float):
+    def _deploy_backward_search_ants(self, iteration, iteration_best_path_cost) -> (float, float):
         # Incase no fit ant
         max_pheromone = 0.0
         min_pheromone = 0.0
@@ -102,11 +101,13 @@ class ACO:
                     if ant.path_cost == self.best_path_cost:
                         ant.deposit_pheromones_on_path(elitist_param = 0.2) # Elitist pheromone update
 
-                    max_pheromone = num_ants * self.graph_api.pheromone_deposit_weight/ant.path_cost
+                    max_pheromone = self.graph_api.pheromone_deposit_weight/ant.path_cost
                 else:
                     # Only global best can update pheromones
+                    if ant.path_cost == self.best_path_cost:
+                        ant.deposit_pheromones_on_path(elitist_param = 0.2)
                     self.graph_api.deposit_pheromones_for_path(self.best_path)
-                    max_pheromone = num_ants * self.graph_api.pheromone_deposit_weight/self.best_path_cost
+                    max_pheromone = self.graph_api.pheromone_deposit_weight/self.best_path_cost
                 min_pheromone = self.min_scaling_factor * max_pheromone
         return max_pheromone, min_pheromone
                 
@@ -148,7 +149,7 @@ class ACO:
 
             # Rest of method remains the same
             iteration_best_path_cost = self._deploy_forward_search_ants()
-            max_pheromon, min_pheromon = self._deploy_backward_search_ants(iteration, num_ants, iteration_best_path_cost)        
+            max_pheromon, min_pheromon = self._deploy_backward_search_ants(iteration, iteration_best_path_cost)        
             
             # update pheromones after each iteration
             self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc)

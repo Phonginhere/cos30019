@@ -38,50 +38,61 @@ def main():
     # Calculate adaptive parametersg
     node_count = G.number_of_nodes()
     
-    ant_max_steps = node_count * 2
-    iterations = 500
-    num_ants = node_count *2
-    alpha = 2.5
-    beta = 3.5
-    evaporation_rate = 0.5 # Learning rate
+    ant_max_steps = node_count + 1
+    iterations = 2000
+    num_ants = node_count
+    alpha = 1
+    beta = 2
+    evaporation_rate = 0.5 
     
-    # Initialize ACO with optimized parameters
-    aco = ACO(G, 
-              ant_max_steps=ant_max_steps,
-              num_iterations=iterations, 
-              evaporation_rate=evaporation_rate, 
-              alpha=alpha, 
-              beta=beta, 
-              mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
-              log_step=10 # Log every 10 iterations
-    )
+    path_results = []
+    cost_results = []
+    for i in range(1):
+        # Initialize ACO with optimized parameters
+        aco = ACO(G, 
+                ant_max_steps=ant_max_steps,
+                num_iterations=iterations, 
+                evaporation_rate=evaporation_rate, 
+                alpha=alpha, 
+                beta=beta, 
+                mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
+                log_step=10 
+        )
 
-    aco_path, aco_cost = aco.find_shortest_path(
-        source=origin,
-        destination=destinations,
-        num_ants=num_ants
-    )
-    
-    # Output results
-    if not aco_path:
-        # No path found but no exception thrown
-        print(f"\"aco_search.py\" CUS2")
-        print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
-        print("No path found")
-        print("0.0")
-    else:
-        # Normal output
-        aco_path = [node for node in aco_path]
-        goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
-        number_of_nodes = G.number_of_nodes()
-        path_str = " ".join(aco_path)
+        aco_path, aco_cost = aco.find_shortest_path(
+            source=origin,
+            destination=destinations,
+            num_ants=num_ants
+        )
+        print(f"Iteration {i+1}:")
+        print(f"Cost: {aco_cost}")
         
-        print(f"\"aco_search.py\" CUS2")
-        print(f"{goal_str} {number_of_nodes}")
-        print(f"{path_str}")
-        print(f"{aco_cost}")
+        path_results.append(aco_path)
+        cost_results.append(aco_cost)
         
-        aco.graph_api.visualize_graph(aco_path, aco_cost)
+        # Output results
+        # if not aco_path:
+        #     # No path found but no exception thrown
+        #     print(f"\"aco_search.py\" CUS2")
+        #     print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
+        #     print("No path found")
+        #     print("0.0")
+        # else:
+        #     # Normal output
+        #     aco_path = [node for node in aco_path]
+        #     goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
+        #     number_of_nodes = G.number_of_nodes()
+        #     path_str = " ".join(aco_path)
+            
+        #     print(f"\"aco_search.py\" CUS2")
+        #     print(f"{goal_str} {number_of_nodes}")
+        #     print(f"{path_str}")
+        #     print(f"{aco_cost}")
+            
+            # aco.graph_api.visualize_graph(aco_path, aco_cost)
+    print(f"Minimum cost: {min(cost_results)}")
+    print(f"Maximum cost: {max(cost_results)}")
+    print(f"Average cost: {sum(cost_results) / len(cost_results)}")
 
 if __name__ == "__main__":
     main()

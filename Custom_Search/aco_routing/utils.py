@@ -23,11 +23,11 @@ def compute_edge_desirability(
     if edge_cost == 0:
         edge_cost = 1e-10
     
-    if mode == 2:  # TSP mode
-        result = (pheromone_value ** alpha) * ((1 / edge_cost ) ** beta)
-    else:
-        result = (pheromone_value ** alpha) * ((edge_distance / edge_cost) ** beta)
-    
+    # if mode == 2:  # TSP mode
+    #     result = (pheromone_value ** alpha) * ((1 / edge_cost ) ** beta)
+    # else:
+    #     result = (pheromone_value ** alpha) * ((edge_distance / edge_cost) ** beta)
+    result = (pheromone_value ** alpha) * ((1 / edge_cost ) ** beta)
     # Store in cache (but limit cache size)
     if len(_desirability_cache) < 10000:  # Prevent memory issues
         _desirability_cache[cache_key] = result
