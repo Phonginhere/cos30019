@@ -5,20 +5,42 @@ import importlib.util
 import traceback
 
 def main():
-    # Check if algorithm name is provided
+    # Check if enough arguments are provided
     if len(sys.argv) < 2:
         print("Usage: python search.py <algorithm> [optional arguments]")
-        print("Available algorithms: aco, bfs, dfs, astar, etc.")
+        print("   OR: python search.py <input_file> <algorithm>")
+        print("Available algorithms: CUS2 (ACO), BFS, DFS, AS, GBFS, CUS1 (Dijkstra)")
         sys.exit(1)
 
-    # Get the algorithm name from command line
-    algorithm = sys.argv[1]
+    # Parse command line arguments - support both formats
+    # Format 1: python search.py <algorithm> <input_file>
+    # Format 2: python search.py <input_file> <algorithm>
+    
+    # Identify algorithm and file path
+    first_arg = sys.argv[1]
+    
+    # List of recognized algorithms
+    algorithms = ["CUS2", "BFS", "DFS", "AS", "GBFS", "CUS1"]
+    
+    # Determine if the first argument is an algorithm or a file path
+    if first_arg in algorithms:
+        # Format 1: python search.py <algorithm> <input_file>
+        algorithm = first_arg
+        remaining_args = sys.argv[2:]  # The rest are args (potentially file path)
+    elif len(sys.argv) >= 3 and sys.argv[2] in algorithms:
+        # Format 2: python search.py <input_file> <algorithm>
+        file_path = first_arg
+        algorithm = sys.argv[2]
+        remaining_args = [file_path] + sys.argv[3:]  # File path + any extra args
+    else:
+        print("Error: Could not identify algorithm.")
+        print("Format should be: python search.py <algorithm> <input_file>")
+        print("             OR: python search.py <input_file> <algorithm>")
+        print(f"Recognized algorithms: {', '.join(algorithms)}")
+        sys.exit(1)
 
-    # The remaining arguments
-    remaining_args = sys.argv[2:]
-
+    # Execute the appropriate algorithm
     if algorithm == "CUS2":
-        # Option 1: Use importlib to run the module function
         try:
             # Get paths
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +60,6 @@ def main():
                 aco_module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(aco_module)
                 
-                # Pass remaining args to sys.argv for the module to access
                 # Save original argv
                 original_argv = sys.argv.copy()
                 
@@ -104,6 +125,7 @@ def main():
             traceback.print_exc()
             sys.exit(1)
     
+    # Rest of your code remains the same for other algorithms...
     elif algorithm == "DFS":
         # Add DFS implementation here
         print("DFS algorithm selected (not implemented yet)")
