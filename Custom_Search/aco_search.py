@@ -15,7 +15,7 @@ from parser import parse_graph_file
 
 def main():
     # Get file path from command line argument if provided
-    file_path = "Data/PathFinder-test.txt"
+    file_path = "Data/TSP_Test_case_4.txt"
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -39,10 +39,10 @@ def main():
     node_count = G.number_of_nodes()
     
     ant_max_steps = node_count * 2
-    iterations = 100
-    num_ants = node_count 
-    alpha = 3.5
-    beta = 2.5
+    iterations = 500
+    num_ants = node_count *2
+    alpha = 2.5
+    beta = 3.5
     evaporation_rate = 0.5 # Learning rate
     
     # Initialize ACO with optimized parameters
@@ -52,7 +52,7 @@ def main():
               evaporation_rate=evaporation_rate, 
               alpha=alpha, 
               beta=beta, 
-              mode=1, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
+              mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
               log_step=10 # Log every 10 iterations
     )
 

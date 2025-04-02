@@ -28,6 +28,7 @@ class GraphApi:
         self.evaporation_rate = evaporation_rate
         self.gamma = 0.95
         self.epsilon = 1e-7
+        self.pheromone_deposit_weight = 1 # Weight for pheromone deposit
         
         # Precompute and cache edge costs
         self._edge_cost_cache = {}
@@ -52,15 +53,22 @@ class GraphApi:
     def get_edge_pheromones(self, u: str, v: str) -> float:
         return self.graph.edges.get((u, v), {}).get("pheromones", 0.0)
 
-    def deposit_pheromones(self, u: str, v: str, pheromone_amount: float, elitist_param: float) -> None:
+    def deposit_pheromones(self, u: str, v: str, pheromone_amount: float) -> None:
         if (u, v) in self.graph.edges:
-            delta_pheromone = pheromone_amount + elitist_param
+            delta_pheromone = pheromone_amount
             self.graph.edges[(u, v)]["delta_pheromones"] += delta_pheromone
+            
+    def deposit_pheromones_for_path(self, path: List[str]) -> None:
+        for i in range(len(path) - 1):
+            u = path[i]
+            v = path[i + 1]
+            pheromone_amount = self.pheromone_deposit_weight / self.get_edge_cost(u, v)
+            self.deposit_pheromones(u, v, pheromone_amount)
             
     def update_pheromones(self, max_pheromon, min_pheromon, current_acc, current_d_acc) -> None:
         for u, v in self.graph.get_edges():
             if (u, v) in self.graph.edges:
-                # Gradient descent update
+                # Gradient descent update using Adadelta Optimizer
                 pheromones = self.graph.edges[(u, v)].get("pheromones", 0.0)
                 gt = pheromones - self.graph.edges[(u, v)].get("delta_pheromones", 0.0) / self.evaporation_rate
                 acc = self.gamma * current_acc + (1 - self.gamma) * gt * gt
