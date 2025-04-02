@@ -31,6 +31,6 @@ shortest_path, shortest_dest, shortest_cost = network.find_shortest_path_to_dest
 
 # Show the result
 if shortest_path:
-    print(f"Path: {' -> '.join(map(str, shortest_path))}")
+    print(f"Path: {' '.join(map(str, shortest_path))}")
 else:
     print("\nNo paths found to any destination.")

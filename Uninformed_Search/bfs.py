@@ -31,6 +31,7 @@ shortest_path, shortest_dest, shortest_weight = network.find_shortest_path_to_de
 
 # Show the result
 if shortest_path:
-    print(f"Path: {' -> '.join(map(str, shortest_path))} with total weight {shortest_weight}")
+    # print(f"Path: {' '.join(map(str, shortest_path))} with total weight {shortest_weight}")
+    print(f"Path: {' '.join(map(str, shortest_path))}")
 else:
     print("\nNo paths found to any destination.")
