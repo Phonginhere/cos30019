@@ -84,7 +84,7 @@ def main():
         alpha=alpha, 
         beta=beta, 
         mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
-        log_step=None, # Setting log, Int or None
+        log_step=10, # Setting log, Int or None
         visualize=True,  # Enable visualization
         visualization_step=10  # Update visualization every 5 iterations
     )

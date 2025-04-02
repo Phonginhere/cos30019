@@ -6,7 +6,7 @@ This repository contains the implementation of various search algorithms for pat
 
 ### Uninformed Search Algorithms
 1. **BFS (Breadth-First Search)** - Implemented by Phong
-2. **DFS (Depth-First Search)** - Implemented by Pink
+2. **DFS (Depth-First Search)** - Implemented by Phong
 
 ### Informed Search Algorithms
 1. **GBFS (Greedy Best-First Search)** - Implemented by Tuan
@@ -42,11 +42,9 @@ python search.py CUS2
 
 ### Requirements
 - Python 3.6+ 
-- NetworkX
 - Matplotlib
-- ACO-Routing package (for CUS2)
 
 ### Installation:
 ```bash
-pip install networkx matplotlib aco-routing
+pip install matplotlib
 ```
