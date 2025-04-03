@@ -128,7 +128,46 @@ def main():
     # Rest of your code remains the same for other algorithms...
     elif algorithm == "DFS":
         # Add DFS implementation here
-        print("DFS algorithm selected (not implemented yet)")
+        print("Depth First Search ")
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            dfs_path = os.path.join(current_dir, "Uninformed_Search", "dfs.py")
+            
+            # Add Uninformed_Search directory to sys.path
+            uninformed_search_dir = os.path.join(current_dir, "Uninformed_Search")
+            if uninformed_search_dir not in sys.path:
+                sys.path.insert(0, uninformed_search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(dfs_path):
+                print(f"Loading DFS module from: {dfs_path}")
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("dfs", dfs_path)
+                dfs_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(dfs_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [dfs_path] + remaining_args
+                else:
+                    sys.argv = [dfs_path]
+                
+                # Execute the DFS code (it runs automatically when imported)
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: DFS module {dfs_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing DFS search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
     
     elif algorithm == "AS":
         # Add A* implementation here

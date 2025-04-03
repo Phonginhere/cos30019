@@ -1,5 +1,6 @@
 import os
 import sys
+from abc import abstractmethod
 
 # Get the path to the project root by going up 2 levels
 current_dir = os.path.dirname(os.path.abspath(__file__))  # Current: .../Uninformed_Search/entity
@@ -35,3 +36,33 @@ class SearchNetwork(Network):
             self.add_edge(src, tgt, weight=weight)
             
         return self  # Return self for method chaining
+    
+    @abstractmethod
+    def find_path(self, start, goal):
+        """
+        Find path from start to goal node.
+        
+        Returns:
+            tuple: (path, weight) where path is a list of nodes and weight is the total cost
+        """
+        pass
+    
+    def find_shortest_path_to_destinations(self, origin, destinations):
+        """
+        Find the shortest path from origin to any of the destinations.
+        
+        Returns:
+            tuple: (path, destination, weight) of the shortest path
+        """
+        shortest_path = None
+        shortest_dest = None
+        shortest_weight = float('inf')
+        
+        for dest in destinations:
+            path, weight = self.find_path(origin, dest)
+            if path and weight < shortest_weight:
+                shortest_weight = weight
+                shortest_path = path
+                shortest_dest = dest
+                
+        return shortest_path, shortest_dest, shortest_weight
