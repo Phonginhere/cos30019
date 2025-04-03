@@ -18,6 +18,7 @@ This repository contains the implementation of various search algorithms for pat
 
 
 ## Folder Structure
+```
 COS30019_IntroAI/
 ├── README.md
 ├── search.py                # Main entry point
@@ -45,7 +46,7 @@ COS30019_IntroAI/
         ├── network.py      # Network representation
         ├── aco_visualizer.py # Visualization system
         └── utils.py        # Helper functions and caching
-
+```
 ## Usage
 
 ### Running the search.py main file
