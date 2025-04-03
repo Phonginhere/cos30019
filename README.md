@@ -16,6 +16,36 @@ This repository contains the implementation of various search algorithms for pat
 1. **CUS1 (Dijkstras Algorithm Search)** - Implemented by Phong
 2. **CUS2 (Ant Colony Optimization)** - Implemented by Pink
 
+
+## Folder Structure
+COS30019_IntroAI/
+├── README.md
+├── search.py                # Main entry point
+├── Data/                    # Input graph files
+│   ├── Australia.txt
+│   ├── PathFinder-test.txt
+│   ├── TSP_Test_case_4.txt
+│   └── Romania.txt
+├── data_reader/            # Graph parsing utilities
+│   └── parser.py
+├── Uninformed_Search/      # BFS and DFS implementations
+│   ├── bfs.py
+│   └── dfs.py
+├── Informed_Search/        # A* and GBFS implementations
+│   ├── astar.py
+│   └── gbfs.py
+└── Custom_Search/          # Custom search algorithms
+    ├── aco_search.py       # ACO main script
+    ├── Dijkstras_Algorithm/
+    │   └── dijk.py
+    └── aco_routing/        # ACO implementation
+        ├── aco.py          # Main ACO algorithm
+        ├── ant.py          # Ant agent implementation
+        ├── graph_api.py    # Graph operations
+        ├── network.py      # Network representation
+        ├── aco_visualizer.py # Visualization system
+        └── utils.py        # Helper functions and caching
+
 ## Usage
 
 ### Running the search.py main file
