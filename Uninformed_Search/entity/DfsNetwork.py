@@ -3,7 +3,7 @@ import sys
 
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-print("Parent directory:", parent_dir)
+# print("Parent directory:", parent_dir)
 # Add the path to the common search network class
 common_dir = os.path.join(parent_dir, "Custom_Search", "Dijkstras_Algorithm")
 sys.path.append(common_dir)

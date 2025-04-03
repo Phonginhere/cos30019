@@ -15,7 +15,7 @@ from Uninformed_Search.entity.DfsNetwork import DfsNetwork
 
 # Parse the graph file
 file_path = "Data/PathFinder-test.txt"
-print("Parsing graph file:", file_path)
+# print("Parsing graph file:", file_path)
 nodes, edges, origin, destinations = parse_graph_file(file_path)
 
 # Print goals and number of nodes

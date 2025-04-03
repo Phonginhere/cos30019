@@ -4,9 +4,9 @@ import heapq
 
 # Fix the path imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
-print("Current directory:", current_dir)
+# print("Current directory:", current_dir)
 parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-print("Parent directory:", parent_dir)
+# print("Parent directory:", parent_dir)
 
 # Import the intermediate parent class
 common_dir = os.path.join(parent_dir, "Uninformed_Search", "entity")
