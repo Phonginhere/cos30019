@@ -54,7 +54,7 @@ class ACOTuner:
             self.G.add_edge(start, end, cost=float(weight))
         
         # Get baseline adaptive parameters
-        self.baseline_params = 51*2, 1000, 51*2, 0.1, 1, 1
+        self.baseline_params = 51+1, 100, 51, 0.5, 1, 2
         
         # Unpack baseline parameters
         self.baseline_ant_max_steps, self.baseline_iterations, self.baseline_num_ants, \
@@ -82,13 +82,16 @@ class ACOTuner:
         beta = params['beta']
         
         aco = ACO(self.G, 
-                  ant_max_steps=ant_max_steps,
-                  num_iterations=iterations, 
-                  evaporation_rate=evaporation_rate, 
-                  alpha=alpha, 
-                  beta=beta, 
-                  mode=2,
-                  )
+            ant_max_steps=ant_max_steps,
+            num_iterations=iterations, 
+            evaporation_rate=evaporation_rate, 
+            alpha=alpha, 
+            beta=beta, 
+            mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
+            log_step=None, # Setting log, Int or None
+            visualize=None,  # Enable visualization
+            visualization_step=10  # Update visualization every 10 iterations
+        )
         
         start_time = time.time()
         path, cost = aco.find_shortest_path(
@@ -485,12 +488,20 @@ def main():
     tuner = ACOTuner(graph_file, num_trials=5)
     
     # Run Bayesian optimization
-    bayes_results = tuner.run_bayesian_optimization(n_iterations=15)
-    tuner.visualize_results(bayes_results, "bayesian")
+    # results = tuner.run_bayesian_optimization(n_iterations=15)
+    # tuner.visualize_results(results, "bayesian")
+    
+    # Run grid search
+    # results = tuner.run_grid_search()
+    # tuner.visualize_results(results, "grid")
+    
+    # Run random search
+    results = tuner.run_random_search(num_samples=20)
+    tuner.visualize_results(results, "random")
     
     # Print best parameters
-    best_params = bayes_results[0]
-    print("\nBest parameters from Bayesian optimization:")
+    best_params = results[0]
+    print("\nBest parameters:")
     print(f"Parameters: {best_params['params']}")
     print(f"Average Cost: {best_params['avg_cost']}")
     print(f"Success Rate: {best_params['success_rate']}")
