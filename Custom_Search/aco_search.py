@@ -41,11 +41,11 @@ def main():
     # Pre-allocate graph memory
     G.graph = {node: [] for node in nodes}
     G.pos = nodes
-    
+
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
-    
+
     # Calculate adaptive parameters
     node_count = G.number_of_nodes()
     
@@ -65,7 +65,7 @@ def main():
         beta=beta, 
         mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=None, # Setting log, Int or None
-        visualize=True,  # Enable visualization
+        visualize=False,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
     )
 
