@@ -83,24 +83,23 @@ def main():
             sys.exit(1)
     
     elif algorithm == "BFS":
-        print("Breadth-First Search")
-        # Add BFS implementation here
         try:
             # Get paths
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            bfs_path = os.path.join(current_dir, "Uninformed_Search", "bfs.py")
+            search_dir = os.path.join(current_dir, "Uninformed_Search")
+            module_path = os.path.join(search_dir, "bfs.py")
             
-            # Add Uninformed_Search directory to sys.path
-            uninformed_search_dir = os.path.join(current_dir, "Uninformed_Search")
-            if uninformed_search_dir not in sys.path:
-                sys.path.insert(0, uninformed_search_dir)
+            # Add directory to sys.path
+            if search_dir not in sys.path:
+                sys.path.insert(0, search_dir)
             
             # Check if the module exists
-            if os.path.exists(bfs_path):
-                print(f"Loading BFS module from: {bfs_path}")
+            if os.path.exists(module_path):
+                print(f"Loading BFS module from: {module_path}")
+                print("Breadth-First Search")
                 
                 # Import the module
-                spec = importlib.util.spec_from_file_location("bfs", bfs_path)
+                spec = importlib.util.spec_from_file_location("bfs", module_path)
                 bfs_module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(bfs_module)
                 
@@ -109,27 +108,66 @@ def main():
                 
                 # Update argv to pass the input file path if provided
                 if remaining_args:
-                    sys.argv = [bfs_path] + remaining_args
+                    sys.argv = [module_path] + remaining_args
                 else:
-                    sys.argv = [bfs_path]
-                
-                # Execute the BFS code (it runs automatically when imported)
+                    sys.argv = [module_path]
+
+                # Run the main function
+                bfs_module.main()
                 
                 # Restore original argv
                 sys.argv = original_argv
             else:
-                print(f"Error: BFS module {bfs_path} not found!")
+                print(f"Error: Module {module_path} not found!")
                 sys.exit(1)
         except Exception as e:
             print(f"Error executing BFS search: {e}")
             traceback.print_exc()
             sys.exit(1)
     
-    # Rest of your code remains the same for other algorithms...
     elif algorithm == "DFS":
-        # Add DFS implementation here
-        print("DFS algorithm selected (not implemented yet)")
-    
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            search_dir = os.path.join(current_dir, "Uninformed_Search")
+            module_path = os.path.join(search_dir, "dfs.py")
+            
+            # Add directory to sys.path
+            if search_dir not in sys.path:
+                sys.path.insert(0, search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(module_path):
+                print(f"Loading DFS module from: {module_path}")
+                print("Depth First Search")
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("dfs", module_path)
+                dfs_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(dfs_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [module_path] + remaining_args
+                else:
+                    sys.argv = [module_path]
+
+                # Run the main function
+                dfs_module.main()
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: Module {module_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing DFS search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
+
     elif algorithm == "AS":
         # Add A* implementation here
         print("A* algorithm selected (not implemented yet)")
@@ -139,45 +177,45 @@ def main():
         print("Greedy Best-First Search algorithm selected (not implemented yet)")
         
     elif algorithm == "CUS1":
-        print("CUS1")
-        # Add Uniform Cost Search implementation here
         try:
             # Get paths
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            bfs_path = os.path.join(current_dir, "Custom_Search", "Dijkstras_Algorithm", "dijk.py")
+            search_dir = os.path.join(current_dir, "Custom_Search", "Dijkstras_Algorithm")
+            module_path = os.path.join(search_dir, "dijk.py")
             
-            # Add Custom Search directory to sys.path
-            uninformed_search_dir = os.path.join(current_dir, "Dijkstras_Algorithm")
-            if uninformed_search_dir not in sys.path:
-                sys.path.insert(0, uninformed_search_dir)
+            # Add directory to sys.path
+            if search_dir not in sys.path:
+                sys.path.insert(0, search_dir)
             
-            # Check if the module exists
-            if os.path.exists(bfs_path):
-                print(f"Loading Dijkstras module from: {bfs_path}")
-                
-                # Import the module
-                spec = importlib.util.spec_from_file_location("bfs", bfs_path)
-                bfs_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(bfs_module)
+             # Check if the module exists
+            if os.path.exists(module_path):
+                print(f"Loading Dijkstra module from: {module_path}")
+                print("CUS1 (Dijkstra's Algorithm)")
                 
                 # Save original argv
                 original_argv = sys.argv.copy()
                 
                 # Update argv to pass the input file path if provided
                 if remaining_args:
-                    sys.argv = [bfs_path] + remaining_args
+                    sys.argv = [module_path] + remaining_args
                 else:
-                    sys.argv = [bfs_path]
+                    sys.argv = [module_path]
                 
-                # Execute the BFS code (it runs automatically when imported)
+                # Import the module
+                spec = importlib.util.spec_from_file_location("dijk", module_path)
+                dijk_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(dijk_module)
+                
+                # Run the main function
+                dijk_module.main()
                 
                 # Restore original argv
                 sys.argv = original_argv
             else:
-                print(f"Error: BFS module {bfs_path} not found!")
+                print(f"Error: Module {module_path} not found!")
                 sys.exit(1)
         except Exception as e:
-            print(f"Error executing BFS search: {e}")
+            print(f"Error executing Dijkstra search: {e}")
             traceback.print_exc()
             sys.exit(1)
         

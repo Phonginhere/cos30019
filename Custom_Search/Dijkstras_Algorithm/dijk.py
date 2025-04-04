@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 
 # Set up path for imports
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,24 +14,42 @@ from parser import parse_graph_file
 sys.path.append(os.path.join(current_dir, "entity"))
 from DijkstraNetwork import DijkstraNetwork
 
-# Parse the graph file
-file_path = "Data/PathFinder-test.txt"
-print("Parsing graph file:", file_path)
-nodes, edges, origin, destinations = parse_graph_file(file_path)
 
-# Print goals and number of nodes
-print("Goals:", destinations)
-print("Number of nodes:", len(nodes))
+def main():
+    # Initialize the parser
+    parser = argparse.ArgumentParser(description='Dijkstra\'s Algorithm for path finding')
+    parser.add_argument('file_path', nargs='?', default="Data/PathFinder-test.txt",
+                        help='Path to the graph file (default: Data/PathFinder-test.txt)')
+        
+    # Check if the script was called directly or through search.py
+    if len(sys.argv) > 1:
+        args = parser.parse_args()
+        file_path = args.file_path
+    else:
+        # Default file path if no arguments provided
+        file_path = "Data/PathFinder-test.txt"
 
-# Create the DijkstraNetwork instance
-network = DijkstraNetwork()
-network.build_from_data(nodes, edges)
+    try:
+        nodes, edges, origin, destinations = parse_graph_file(file_path)
 
-# Find and display the shortest path to any destination
-shortest_path, shortest_dest, shortest_cost = network.find_shortest_path_to_destinations(origin, destinations)
+        # Print goals and number of nodes
+        print("Goals:", destinations)
+        print("Number of nodes:", len(nodes))
 
-# Show the result
-if shortest_path:
-    print(f"Path: {' '.join(map(str, shortest_path))}")
-else:
-    print("\nNo paths found to any destination.")
+        # Create the DijkstraNetwork instance
+        network = DijkstraNetwork()
+        network.build_from_data(nodes, edges)
+
+        # Find and display the shortest path to any destination
+        shortest_path, shortest_dest, shortest_cost = network.find_shortest_path_to_destinations(origin, destinations)
+
+        # Show the result
+        if shortest_path:
+            print(f"Path: {' '.join(map(str, shortest_path))}")
+        else:
+            print("\nNo paths found to any destination.")
+    except Exception as e:
+        print(f"Error parsing graph file: {e}")
+
+if __name__ == "__main__":
+    main()

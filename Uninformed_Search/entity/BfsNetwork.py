@@ -4,7 +4,7 @@ from collections import deque
 
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-print("Parent directory:", parent_dir)
+# print("Parent directory:", parent_dir)
 # Add the path to the common search network class
 common_dir = os.path.join(parent_dir, "Custom_Search", "Dijkstras_Algorithm")
 sys.path.append(common_dir)
@@ -12,7 +12,7 @@ sys.path.append(common_dir)
 # Import the intermediate parent class
 from SearchNetwork import SearchNetwork
 
-class UninformNetwork(SearchNetwork):
+class BfsNetwork(SearchNetwork):
     """
     Extended Network class with BFS functionalities for path finding.
     """
@@ -77,23 +77,7 @@ class UninformNetwork(SearchNetwork):
         else:
             return None, float('inf')
     
-    def find_shortest_path_to_destinations(self, origin, destinations):
-        """
-        Find the shortest path from origin to any of the destinations.
-        
-        Returns:
-            tuple: (path, destination, weight) of the shortest path
-        """
-        shortest_path = None
-        shortest_dest = None
-        shortest_weight = float('inf')
-        
-        for dest in destinations:
-            path, weight = self.bfs_path(origin, dest)
-            if path and weight < shortest_weight:
-                shortest_weight = weight
-                shortest_path = path
-                shortest_dest = dest
-                
-        return shortest_path, shortest_dest, shortest_weight
+    def find_path(self, start, goal):
+        """Implementation of the abstract method using BFS"""
+        return self.bfs_path(start, goal)
     
