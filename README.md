@@ -56,7 +56,9 @@ COS30019_IntroAI/
 You can run any of the search algorithms from the command line using:
 
 ```bash
-python search.py <algorithm> [optional arguments]
+python search.py <algorithm> DataFileName
+or
+python search.py DataFileName <algorithm> 
 ```
 
 Where `<algorithm>` is one of:
@@ -70,7 +72,7 @@ Where `<algorithm>` is one of:
 ### Example:
 
 ```bash
-python search.py CUS2
+python search.py CUS2 Data/PathFinder-test.txt
 ```
 
 ### Requirements
