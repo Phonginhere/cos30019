@@ -138,7 +138,7 @@ def create_visualizations(results, output_dir):
 
 def main():
     project_root = Path(__file__).parent.parent
-    results_dir = project_root / "Tests" / "Results"
+    results_dir = project_root / "Tests" / "ACO_Results"
     output_dir = project_root / "Tests" / "Visualizations"
     
     # Create output directory if it doesn't exist

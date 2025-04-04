@@ -73,7 +73,7 @@ def run_test(test_file_path):
 
 def main():
     # Create test results directory if it doesn't exist
-    results_dir = project_root / "Tests" / "Results"
+    results_dir = project_root / "Tests" / "ACO_Results"
     results_dir.mkdir(exist_ok=True)
     
     # Get list of all test files

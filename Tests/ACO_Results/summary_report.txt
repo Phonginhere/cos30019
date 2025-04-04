@@ -1,0 +1,245 @@
+# ACO Algorithm Test Results
+Tests run: 30
+Successful: 30
+Failed: 0
+
+## Test: test_case_1.txt
+Success: True
+Execution time: 0.483 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_1.txt CUS2
+Goal info: [4] 4
+Path: 1 2 3 4
+Cost: 3.0
+
+## Test: test_case_10.txt
+Success: True
+Execution time: 0.476 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_10.txt CUS2
+Goal info: [1, 5] 5
+Path: 2 1
+Cost: 2.0
+
+## Test: test_case_11.txt
+Success: True
+Execution time: 0.799 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_11.txt CUS2
+Goal info: [9] 9
+Path: 1 5 9
+Cost: 2.0
+
+## Test: test_case_12.txt
+Success: True
+Execution time: 0.583 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_12.txt CUS2
+Goal info: [3, 6] 6
+Path: 1 2 3
+Cost: 3.0
+
+## Test: test_case_13.txt
+Success: True
+Execution time: 0.644 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_13.txt CUS2
+Goal info: [5] 7
+Path: 1 2 3 4 5
+Cost: 8.0
+
+## Test: test_case_14.txt
+Success: True
+Execution time: 0.702 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_14.txt CUS2
+Goal info: [3, 7, 9] 9
+Path: 1 2 3
+Cost: 4.0
+
+## Test: test_case_15.txt
+Success: True
+Execution time: 0.703 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_15.txt CUS2
+Goal info: [7] 7
+Path: 1 3 5 7
+Cost: 9.0
+
+## Test: test_case_16.txt
+Success: True
+Execution time: 0.609 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_16.txt CUS2
+Goal info: [6] 6
+Path: 1 2 3 6
+Cost: 4.0
+
+## Test: test_case_17.txt
+Success: True
+Execution time: 0.480 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_17.txt CUS2
+Goal info: [3] 5
+Path: 1 5 3
+Cost: 2.0
+
+## Test: test_case_18.txt
+Success: True
+Execution time: 0.610 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_18.txt CUS2
+Goal info: [5] 8
+Path: 1 3 5
+Cost: 6.0
+
+## Test: test_case_19.txt
+Success: True
+Execution time: 0.992 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_19.txt CUS2
+Goal info: [12] 12
+Path: 1 5 9 10 11 12
+Cost: 10.0
+
+## Test: test_case_2.txt
+Success: True
+Execution time: 0.460 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_2.txt CUS2
+Goal info: [4] 4
+Path: 1 2 4
+Cost: 2.0
+
+## Test: test_case_20.txt
+Success: True
+Execution time: 0.786 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_20.txt CUS2
+Goal info: [9] 9
+Path: 1 4 7 8 9
+Cost: 6.0
+
+## Test: test_case_21.txt
+Success: True
+Execution time: 1.100 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_21.txt CUS2
+Goal info: [10] 10
+Path: 1 2 4 6 8 10
+Cost: 15.0
+
+## Test: test_case_22.txt
+Success: True
+Execution time: 0.957 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_22.txt CUS2
+Goal info: [5] 9
+Path: 1 2 3 4 5
+Cost: 8.0
+
+## Test: test_case_23.txt
+Success: True
+Execution time: 1.132 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_23.txt CUS2
+Goal info: [9] 9
+Path: 1 5 9
+Cost: 2.0
+
+## Test: test_case_24.txt
+Success: True
+Execution time: 0.649 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_24.txt CUS2
+Goal info: [7] 7
+Path: 1 3 5 7
+Cost: 26.0
+
+## Test: test_case_25.txt
+Success: True
+Execution time: 0.859 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_25.txt CUS2
+Goal info: [8] 8
+Path: 1 2 5 7 8
+Cost: 12.0
+
+## Test: test_case_26.txt
+Success: True
+Execution time: 0.809 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_26.txt CUS2
+Goal info: [9] 9
+Path: 1 4 5 8 9
+Cost: 4.0
+
+## Test: test_case_27.txt
+Success: True
+Execution time: 1.311 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_27.txt CUS2
+Goal info: [15] 15
+Path: 1 2 3 4 5 10 15
+Cost: 9.0
+
+## Test: test_case_28.txt
+Success: True
+Execution time: 0.802 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_28.txt CUS2
+Goal info: [9] 9
+Path: 1 4 5 6 9
+Cost: 8.0
+
+## Test: test_case_29.txt
+Success: True
+Execution time: 2.877 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_29.txt CUS2
+Goal info: [20] 20
+Path: 1 2 3 4 9 15 20
+Cost: 21.0
+
+## Test: test_case_3.txt
+Success: True
+Execution time: 0.423 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_3.txt CUS2
+Goal info: [2] 3
+Path: 1 2
+Cost: 4.0
+
+## Test: test_case_30.txt
+Success: True
+Execution time: 1.264 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_30.txt CUS2
+Goal info: [12] 12
+Path: 1 2 3 7 11 12
+Cost: 18.0
+
+## Test: test_case_4.txt
+Success: True
+Execution time: 0.474 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_4.txt CUS2
+Goal info: [3] 4
+Path: 1 4 3
+Cost: 6.0
+
+## Test: test_case_5.txt
+Success: True
+Execution time: 0.517 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_5.txt CUS2
+Goal info: [3, 5] 6
+Path: 1 4 5
+Cost: 4.0
+
+## Test: test_case_6.txt
+Success: True
+Execution time: 0.470 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_6.txt CUS2
+Goal info: [4] 4
+Path: 1 3 4
+Cost: 3.0
+
+## Test: test_case_7.txt
+Success: True
+Execution time: 0.475 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_7.txt CUS2
+Goal info: [3] 4
+Path: 1 2 3
+Cost: 2.0
+
+## Test: test_case_8.txt
+Success: True
+Execution time: 0.527 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_8.txt CUS2
+Goal info: [2, 4] 6
+Path: 1 2
+Cost: 2.0
+
+## Test: test_case_9.txt
+Success: True
+Execution time: 0.444 seconds
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_9.txt CUS2
+Goal info: [3] 4
+Path: 1 3
+Cost: 3.0
+

@@ -1,0 +1,9 @@
+# Test Results for test_case_3.txt
+
+Success: True
+Execution time: 0.423 seconds
+
+Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_3.txt CUS2
+Goal info: [2] 3
+Path: 1 2
+Cost: 4.0

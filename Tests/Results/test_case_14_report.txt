@@ -1,9 +1,0 @@
-# Test Results for test_case_14.txt
-
-Success: True
-Execution time: 18.847 seconds
-
-Algorithm info: Adaptive parameters: ant_max_steps=2000, iterations=750, num_ants=50
-Goal info: ACO tuning: evaporation_rate=0.04, alpha=1.00, beta=1.50
-Path: "aco_search.py" CUS2
-Cost: [3, 7, 9] 18
