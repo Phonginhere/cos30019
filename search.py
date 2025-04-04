@@ -111,6 +111,9 @@ def main():
                     sys.argv = [module_path] + remaining_args
                 else:
                     sys.argv = [module_path]
+
+                # Run the main function
+                bfs_module.main()
                 
                 # Restore original argv
                 sys.argv = original_argv
@@ -151,6 +154,9 @@ def main():
                     sys.argv = [module_path] + remaining_args
                 else:
                     sys.argv = [module_path]
+
+                # Run the main function
+                dfs_module.main()
                 
                 # Restore original argv
                 sys.argv = original_argv
@@ -171,7 +177,6 @@ def main():
         print("Greedy Best-First Search algorithm selected (not implemented yet)")
         
     elif algorithm == "CUS1":
-        
         try:
             # Get paths
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -182,15 +187,10 @@ def main():
             if search_dir not in sys.path:
                 sys.path.insert(0, search_dir)
             
-            # Check if the module exists
+             # Check if the module exists
             if os.path.exists(module_path):
                 print(f"Loading Dijkstra module from: {module_path}")
                 print("CUS1 (Dijkstra's Algorithm)")
-                
-                # Import the module
-                spec = importlib.util.spec_from_file_location("dijk", module_path)
-                dijk_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(dijk_module)
                 
                 # Save original argv
                 original_argv = sys.argv.copy()
@@ -200,6 +200,14 @@ def main():
                     sys.argv = [module_path] + remaining_args
                 else:
                     sys.argv = [module_path]
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("dijk", module_path)
+                dijk_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(dijk_module)
+                
+                # Run the main function
+                dijk_module.main()
                 
                 # Restore original argv
                 sys.argv = original_argv
