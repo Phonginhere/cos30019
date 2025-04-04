@@ -1,5 +1,10 @@
 # COS30019: Introduction to Artificial Intelligence
 
+Present by Phong Tran, Hong Anh Nguyen, and James Luong
+
+---
+
+
 This repository contains the implementation of various search algorithms for path finding problems, created collaboratively by our team.
 
 ## Search Algorithms
