@@ -1,101 +1,178 @@
 # COS30019: Introduction to Artificial Intelligence
 
-Present by Phong Tran, Hong Anh Nguyen, and James Luong
+Presented by Phong Tran, Hong Anh Nguyen, and James Luong
 
 ---
 
-
 This repository contains the implementation of various search algorithms for path finding problems, created collaboratively by our team.
+
+## Table of Contents
+- [Search Algorithms](#search-algorithms)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Running Search Algorithms](#running-the-searchpy-main-file)
+  - [Running Tests](#running-tests)
+  - [Visualizing Results](#visualizing-results)
+- [Algorithm Details](#algorithm-details)
+  - [ACO Implementation](#aco-implementation-details)
+  - [Advanced Configuration](#advanced-configuration)
+  - [Visualization](#visualization-controls)
 
 ## Search Algorithms
 
 ### Uninformed Search Algorithms
 1. **BFS (Breadth-First Search)** - Implemented by Phong
+   - Complete, optimal for unweighted graphs
+   - Uses a queue data structure
+
 2. **DFS (Depth-First Search)** - Implemented by Phong
+   - Complete but not optimal
+   - Uses a stack data structure
 
 ### Informed Search Algorithms
 1. **GBFS (Greedy Best-First Search)** - Implemented by Tuan
+   - Uses heuristics to guide search
+   - Fast but not guaranteed to find optimal paths
+
 2. **AS (A* Search)** - Implemented by Tuan
+   - Combines cost-so-far and heuristics
+   - Complete and optimal with admissible heuristics
 
 ### Custom Search Algorithms
-1. **CUS1 (Dijkstras Algorithm Search)** - Implemented by Phong
+1. **CUS1 (Dijkstra's Algorithm)** - Implemented by Phong
+   - Complete and optimal for non-negative edge weights
+   - Prioritizes nodes by cumulative path cost
+
 2. **CUS2 (Ant Colony Optimization)** - Implemented by Pink
+   - Metaheuristic inspired by ant foraging behavior
+   - Uses pheromone trails and heuristic information
 
+## Project Structure
 
-## Folder Structure
 ```
 COS30019_IntroAI/
-├── README.md
-├── search.py                # Main entry point
-├── Data/                    # Input graph files
-│   ├── PathFinder-test.txt #
-│   ├── TSP_Test_case_4.txt #eil51
-│   ├── TSP_Test_case_3.txt #gr48
-│   ├── TSP_Test_case_2.txt #a280
-│   ├── TSP_Test_case_1.txt #att532
+├── search.py                # Main entry point for all algorithms
+├── Data/                    # Graph data files
+│   ├── Modified_TSP/        # Contains 28 test cases for algorithm testing
+│   └── TSP/                 # Original TSP datasets
 ├── data_reader/            # Graph parsing utilities
-│   └── parser.py
+│   └── parser.py           # File parser for graphs
 ├── Uninformed_Search/      # BFS and DFS implementations
 │   ├── bfs.py
 │   └── dfs.py
 ├── Informed_Search/        # A* and GBFS implementations
 │   ├── astar.py
-│   └── gbfs.py
-└── Custom_Search/          # Custom search algorithms
-    ├── aco_search.py       # ACO main script
-    ├── aco_tuning.py       # ACO hyper-param tuning script
-    ├── Dijkstras_Algorithm/
-    │   └── dijk.py
-    └── aco_routing/        # ACO implementation
-        ├── aco.py          # Main ACO algorithm
-        ├── ant.py          # Ant agent implementation
-        ├── graph_api.py    # Graph operations
-        ├── network.py      # Network representation
-        ├── aco_visualizer.py # Visualization system
-        └── utils.py        # Helper functions and caching
+│   └── GBFS.py
+├── Custom_Search/          # Custom search algorithms
+│   ├── aco_search.py       # ACO main script
+│   ├── aco_tuning.py       # ACO hyper-parameter tuning
+│   ├── Dijkstras_Algorithm/
+│   │   └── dijk.py         # Dijkstra's algorithm implementation
+│   └── aco_routing/        # ACO implementation components
+│       ├── aco.py          # Main ACO algorithm
+│       ├── ant.py          # Ant agent implementation
+│       └── ...             # Supporting modules
+└── Tests/                  # Testing infrastructure
+    ├── run_aco_test.py     # Script to run tests on all algorithms
+    ├── visualize_results.py # Visualization of test results
+    ├── Results/            # Test results in text format
+    └── Visualizations/     # Generated visualizations
 ```
+
+## Installation
+
+### Requirements
+- Python 3.6+ 
+- Required packages:
+  - matplotlib
+  - numpy
+  - pandas
+  - seaborn (for visualizations)
+
+### Installation Command:
+```bash
+pip install matplotlib numpy pandas seaborn
+```
+
 ## Usage
 
 ### Running the search.py main file
 
-You can run any of the search algorithms from the command line using:
+Run any search algorithm from the command line:
 
 ```bash
-python search.py <algorithm> DataFileName
-or
-python search.py DataFileName <algorithm> 
+python search.py <algorithm> <data_file>
+# OR
+python search.py <data_file> <algorithm>
 ```
 
 Where `<algorithm>` is one of:
 - `BFS` - Breadth-First Search
 - `DFS` - Depth-First Search
 - `GBFS` - Greedy Best-First Search
-- `AS` - A* Search
-- `CUS1` - Uniform Cost Search
+- `AS` - A* Search (A-Star)
+- `CUS1` - Dijkstra's Algorithm
 - `CUS2` - Ant Colony Optimization
 
-### Example:
+And `<data_file>` is the path to a graph file.
+
+### Examples:
 
 ```bash
-python search.py CUS2 Data/PathFinder-test.txt
+# Run ACO on a test file
+python search.py CUS2 Data/Modified_TSP/test_0.txt
+
+# Run BFS on a test file
+python search.py Data/Modified_TSP/test_5.txt BFS
 ```
 
-### Requirements
-- Python 3.6+ 
-- Matplotlib
+### Running Tests
 
-### Installation:
+The project includes a testing framework to evaluate all algorithms on multiple test cases. To run tests:
+
 ```bash
-pip install matplotlib
+# Run tests on all algorithms (BFS, DFS, CUS1, CUS2)
+python Tests/run_aco_test.py
 ```
-#### Implementation Details
 
-The ACO implementation includes several advanced features:
+This will:
+1. Run each algorithm on the 28 test cases in `Data/Modified_TSP/`
+2. Generate summary reports in `Tests/Results/`
+3. Create a separate summary file for each algorithm: `summary_result_<algorithm>.txt`
+4. Each result will include test number, origin, destinations, execution time, path cost, and path
+
+### Visualizing Results
+
+After running tests, visualize the results with:
+
+```bash
+# Generate visualizations from test results
+python Tests/visualize_results.py
+```
+
+This creates:
+1. Individual algorithm visualizations in `Tests/Visualizations/<algorithm>/`
+   - Success/failure status
+   - Execution times
+   - Path costs
+
+2. Comparative visualizations in `Tests/Visualizations/Comparison/`
+   - Success rate comparison
+   - Execution time comparison
+   - Path cost comparison
+   - Algorithm performance radar chart
+
+## Algorithm Details
+
+### ACO Implementation Details
+
+The Ant Colony Optimization implementation includes several advanced features:
 
 1. **Optimization Modes**:
-   - Mode 0: Find any path to a single destination (if multi destinations provided, it will return shortest destination)
-   - Mode 1: Find paths to all destinations (From source -> all destination)
-   - Mode 2: Solve TSP (visit all nodes with minimal cost/ Random spawn)
+   - Mode 0: Find any path to a single destination (if multiple destinations provided, it returns shortest destination)
+   - Mode 1: Find paths to all destinations (From source to all destinations)
+   - Mode 2: Solve TSP (visit all nodes with minimal cost / Random spawn)
 
 2. **Parameter Tuning**:
    - `alpha`: Controls pheromone importance (default: 1)
@@ -112,7 +189,7 @@ The ACO implementation includes several advanced features:
    - Pheromone level indication (red: high, green: low)
    - Path highlighting with node and edge details
 
-#### Advanced Configuration
+### Advanced Configuration
 
 For advanced usage, you can modify the parameters in the `aco_search.py` file:
 
@@ -129,12 +206,12 @@ beta = 2                        # Heuristic influence factor
 evaporation_rate = 0.5          # Learning rate, the smaller evaporation_rate the bigger pheromone update (1/evaporation_rate)
 ```
 
-#### Visualization Controls
+### Visualization Controls
 
 The ACO visualization shows:
 
 - **Nodes**: Path nodes (red) and unused nodes (light blue, 20% opacity)
-- **Edges**: Colored by pheromone level (red = high, green = low)
+- **Edges**: Colored by pheromone level (red = high, green: low)
 - **Path**: Highlighted with increased opacity and width
 - **Information**: Edge costs and pheromone levels shown on path edges
 - **Progress**: Current iteration and best path cost
@@ -146,3 +223,9 @@ aco = ACO(
     visualize=True,              # Enable/disable visualization
     visualization_step=10        # Update frequency (iterations)
 )
+
+## Contributors
+
+- **Phong Tran**: BFS, DFS, and Dijkstra's Algorithm
+- **Hong Anh Nguyen**: Ant Colony Optimization (ACO), Testing Framework
+- **James Luong**: A* Search, Greedy Best-First Search
