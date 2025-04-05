@@ -33,19 +33,20 @@ def main():
         nodes, edges, origin, destinations = parse_graph_file(file_path)
 
         # Print goals and number of nodes
-        print("Goals:", destinations)
-        print("Number of nodes:", len(nodes))
+        print(f"{file_path} CUS1")
+        print(f"[{', '.join(destinations)}]", len(nodes))
 
         # Create the DfsNetwork instance
         network = DfsNetwork()
         network.build_from_data(nodes, edges)
 
         # Find and display the shortest path to any destination
-        shortest_path, shortest_dest, shortest_weight = network.find_shortest_path_to_destinations(origin, destinations)
+        shortest_path, shortest_dest, shortest_cost = network.find_shortest_path_to_destinations(origin, destinations)
 
         # Show the result
         if shortest_path:
-            print(f"Path: {' '.join(map(str, shortest_path))}")
+            print(f"{' '.join(map(str, shortest_path))}")
+            print(f"{shortest_cost}")
         else:
             print("\nNo paths found to any destination.")
 

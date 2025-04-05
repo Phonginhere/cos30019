@@ -1,0 +1,5 @@
+DFS Results Summary
+Total tests: 28
+Successful tests: 28 (100.0%)
+Average execution time: 0.050 seconds
+Average path cost: 18.714

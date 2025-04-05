@@ -1,9 +1,0 @@
-# Test Results for test_case_11.txt
-
-Success: True
-Execution time: 0.799 seconds
-
-Algorithm info: c:\Users\pink\Documents\Study\Uni Study\Second Year\Semester 2\COS30019_IntroAI\cos30019\Tests\TestCases\test_case_11.txt CUS2
-Goal info: [9] 9
-Path: 1 5 9
-Cost: 2.0

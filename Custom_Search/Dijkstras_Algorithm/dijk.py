@@ -33,8 +33,8 @@ def main():
         nodes, edges, origin, destinations = parse_graph_file(file_path)
 
         # Print goals and number of nodes
-        print("Goals:", destinations)
-        print("Number of nodes:", len(nodes))
+        print(f"{file_path} CUS1")
+        print(f"[{', '.join(destinations)}]", len(nodes))
 
         # Create the DijkstraNetwork instance
         network = DijkstraNetwork()
@@ -45,7 +45,8 @@ def main():
 
         # Show the result
         if shortest_path:
-            print(f"Path: {' '.join(map(str, shortest_path))}")
+            print(f"{' '.join(map(str, shortest_path))}")
+            print(f"{shortest_cost}")
         else:
             print("\nNo paths found to any destination.")
     except Exception as e:

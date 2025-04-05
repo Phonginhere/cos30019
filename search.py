@@ -94,8 +94,6 @@ def main():
             
             # Check if the module exists
             if os.path.exists(module_path):
-                print(f"Loading BFS module from: {module_path}")
-                print("Breadth-First Search")
                 
                 # Import the module
                 spec = importlib.util.spec_from_file_location("bfs", module_path)
@@ -137,8 +135,6 @@ def main():
             
             # Check if the module exists
             if os.path.exists(module_path):
-                print(f"Loading DFS module from: {module_path}")
-                print("Depth First Search")
                 
                 # Import the module
                 spec = importlib.util.spec_from_file_location("dfs", module_path)
@@ -188,8 +184,6 @@ def main():
             
              # Check if the module exists
             if os.path.exists(module_path):
-                print(f"Loading Dijkstra module from: {module_path}")
-                print("CUS1 (Dijkstra's Algorithm)")
                 
                 # Save original argv
                 original_argv = sys.argv.copy()

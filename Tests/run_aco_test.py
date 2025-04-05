@@ -2,22 +2,52 @@ import os
 import sys
 import subprocess
 import time
+import re
 from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
-def run_test(test_file_path):
+# Import the parse_graph_file function from data_reader module
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_dir, "..", "data_reader"))
+from parser import parse_graph_file
+
+def run_test(test_file_path, algorithm):
     """
-    Run ACO algorithm on the given test file and return the results.
+    Run specified algorithm on the given test file and return the results.
+    
+    Args:
+        test_file_path (str): Path to the test file
+        algorithm (str): Algorithm to use (BFS, DFS, ASTAR, GBFS, CUS1, CUS2)
+    
+    Returns:
+        dict: Results of the test run
     """
     start_time = time.time()
     
-    # Run the ACO algorithm on the test file
-    cmd = [sys.executable, 
-           str(project_root / "Custom_Search" / "aco_search.py"), 
-           test_file_path]
+    # Determine which script to run based on the algorithm
+    if algorithm == "BFS":
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "BFS"]
+    elif algorithm == "DFS":
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "DFS"]
+    elif algorithm == "ASTAR":
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "ASTAR"]
+    elif algorithm == "GBFS":
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "GBFS"]
+    elif algorithm == "CUS1":
+        # Assuming CUS1 is Dijkstra's algorithm
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "CUS1"]
+    elif algorithm == "CUS2":
+        # CUS2 is ACO
+        cmd = [sys.executable, str(project_root / "search.py"), test_file_path, "CUS2"]
+    else:
+        return {
+            "success": False,
+            "error": f"Unknown algorithm: {algorithm}",
+            "execution_time": 0
+        }
     
     try:
         result = subprocess.run(cmd, 
@@ -39,7 +69,7 @@ def run_test(test_file_path):
         if len(output_lines) < 3:
             return {
                 "success": False,
-                "error": "Incomplete output from ACO algorithm",
+                "error": "Incomplete output from algorithm",
                 "output": result.stdout,
                 "execution_time": execution_time
             }
@@ -47,15 +77,22 @@ def run_test(test_file_path):
         algorithm_info = output_lines[0]
         goal_info = output_lines[1]
         path = output_lines[2]
-        cost = output_lines[3] if len(output_lines) > 3 else "N/A"
+        cost = output_lines[3] 
         
+        # Try to extract test number from file name
+        test_num = "Unknown"
+        match = re.search(r'test_(\d+)\.txt', os.path.basename(test_file_path))
+        if match:
+            test_num = match.group(1)
+
         return {
             "success": True,
             "algorithm_info": algorithm_info,
             "goal_info": goal_info,
             "path": path,
             "cost": cost,
-            "execution_time": execution_time
+            "execution_time": execution_time,
+            "test_num": test_num
         }
     
     except subprocess.TimeoutExpired:
@@ -71,78 +108,141 @@ def run_test(test_file_path):
             "execution_time": time.time() - start_time
         }
 
+def get_test_info_from_parser(test_file_path):
+    """
+    Extract origin and destination information from test file using the parse_graph_file function
+    
+    Args:
+        test_file_path (str): Path to the test file
+        
+    Returns:
+        dict: Dictionary containing origin and destinations
+    """
+    try:
+        # Use the parse_graph_file function to extract necessary information
+        nodes, edges, origin, destinations = parse_graph_file(test_file_path)
+        
+        # Format destinations for display
+        formatted_destinations = ", ".join(sorted(destinations)) if destinations else "Unknown"
+        
+        return {
+            "origin": origin if origin else "Unknown",
+            "destinations": formatted_destinations
+        }
+    except Exception as e:
+        print(f"Error parsing graph from {test_file_path}: {e}")
+        return {
+            "origin": "Unknown",
+            "destinations": "Unknown"
+        }
+
 def main():
+    # Available algorithms to test
+    algorithms = ["BFS", "DFS", "CUS1", "CUS2"]  # ASTAR and GBFS are placeholders
+    
     # Create test results directory if it doesn't exist
-    results_dir = project_root / "Tests" / "ACO_Results"
+    results_dir = project_root / "Tests" / "Results"
     results_dir.mkdir(exist_ok=True)
     
-    # Get list of all test files
-    test_cases_dir = project_root / "Tests" / "TestCases"
-    test_files = sorted([f for f in test_cases_dir.glob("*.txt")])
+    # Get list of all test files from Modified_TSP directory
+    test_cases_dir = project_root / "Data" / "Modified_TSP"
+    test_files = sorted([f for f in test_cases_dir.glob("test_*.txt")])
     
     if not test_files:
         print("No test files found in", test_cases_dir)
         return
-    
-    # Run tests and collect results
-    results = []
-    total_tests = len(test_files)
-    success_count = 0
-    
-    for i, test_file in enumerate(test_files, 1):
-        print(f"Running test {i}/{total_tests}: {test_file.name}")
-        result = run_test(str(test_file))
-        result["test_file"] = test_file.name
-        results.append(result)
         
-        if result["success"]:
-            success_count += 1
-            print(f"  ✓ Success (Time: {result['execution_time']:.3f}s, Cost: {result['cost']})")
-        else:
-            print(f"  ✗ Failed: {result['error']}")
+    print(f"Found {len(test_files)} test files in {test_cases_dir}")
     
-    # Generate summary report
-    with open(results_dir / "summary_report.txt", "w") as f:
-        f.write(f"# ACO Algorithm Test Results\n")
-        f.write(f"Tests run: {total_tests}\n")
-        f.write(f"Successful: {success_count}\n")
-        f.write(f"Failed: {total_tests - success_count}\n\n")
+    # Extract test information from all test files up front using parse_graph_file
+    test_info_cache = {}
+    for test_file in test_files:
+        test_info = get_test_info_from_parser(str(test_file))
+        test_info_cache[test_file.name] = test_info
+    
+    # Track overall results for all algorithms
+    all_results = {alg: [] for alg in algorithms}
+    
+    # Test each algorithm
+    for algorithm in algorithms:
+        print(f"\n=== Testing {algorithm} algorithm ===")
         
-        for result in results:
-            f.write(f"## Test: {result['test_file']}\n")
-            f.write(f"Success: {result['success']}\n")
-            f.write(f"Execution time: {result['execution_time']:.3f} seconds\n")
+        success_count = 0
+        total_tests = len(test_files)
+        algorithm_results = []
+        
+        for i, test_file in enumerate(test_files, 1):
+            print(f"Running {algorithm} test {i}/{total_tests}: {test_file.name}")
             
-            if result['success']:
-                f.write(f"Algorithm info: {result['algorithm_info']}\n")
-                f.write(f"Goal info: {result['goal_info']}\n")
-                f.write(f"Path: {result['path']}\n")
-                f.write(f"Cost: {result['cost']}\n")
+            # Get cached test information
+            test_info = test_info_cache[test_file.name]
+            
+            # Run the test with the specified algorithm
+            result = run_test(str(test_file), algorithm)
+            
+            # Add test info and file name to the result
+            result["test_file"] = test_file.name
+            result["origin"] = test_info["origin"]
+            result["destinations"] = test_info["destinations"]
+            
+            algorithm_results.append(result)
+            all_results[algorithm].append(result)
+            
+            if result["success"]:
+                success_count += 1
+                print(f"  ✓ Success (Time: {result['execution_time']:.3f}s, Cost: {result['cost']})")
             else:
-                f.write(f"Error: {result['error']}\n")
+                print(f"  ✗ Failed: {result['error']}")
+        
+        # Generate summary report for this algorithm
+        with open(results_dir / f"summary_result_{algorithm}.txt", "w", encoding='utf-8') as f:
+            f.write(f"# {algorithm} Algorithm Test Results\n")
+            f.write(f"Tests run: {total_tests}\n")
+            f.write(f"Successful: {success_count}\n")
+            f.write(f"Failed: {total_tests - success_count}\n\n")
             
-            f.write("\n")
-    
-    # Generate detailed individual reports
-    for result in results:
-        test_name = Path(result["test_file"]).stem
-        with open(results_dir / f"{test_name}_report.txt", "w") as f:
-            f.write(f"# Test Results for {result['test_file']}\n\n")
-            f.write(f"Success: {result['success']}\n")
-            f.write(f"Execution time: {result['execution_time']:.3f} seconds\n\n")
+            # Table header with fixed column widths
+            f.write("| Test #   | Origin       | Destination(s)        | Time (s)  | Path Cost   | Path                                                |\n")
+            f.write("|----------|--------------|----------------------|-----------|-------------|-----------------------------------------------------|\n")
             
-            if result['success']:
-                f.write(f"Algorithm info: {result['algorithm_info']}\n")
-                f.write(f"Goal info: {result['goal_info']}\n")
-                f.write(f"Path: {result['path']}\n")
-                f.write(f"Cost: {result['cost']}\n")
-            else:
-                f.write(f"Error: {result['error']}\n")
-                if 'output' in result:
-                    f.write(f"\nPartial output:\n{result['output']}\n")
+            for result in algorithm_results:
+                test_num = result.get("test_num", "Unknown")
+                origin = result.get("origin", "Unknown")
+                destinations = result.get("destinations", "Unknown")
+                
+                if result['success']:
+                    # Format successful test result as table row with padding
+                    f.write(f"| {test_num:<8} | {origin:<12} | {destinations:<20} | {result['execution_time']:.3f} | {result['cost']:<11} | {result['path']:<50} |\n")
+                else:
+                    # Format failed test result with padding
+                    error_msg = result['error'][:40] + "..." if len(result['error']) > 40 else result['error']
+                    f.write(f"| {test_num:<8} | {origin:<12} | {destinations:<20} | {result['execution_time']:.3f} | {'Failed':<11} | Error: {error_msg:<42} |\n")
+            
+        print(f"\n{algorithm} testing complete. {success_count}/{total_tests} tests passed.")
     
-    print(f"\nTesting complete. {success_count}/{total_tests} tests passed.")
-    print(f"See {results_dir} for detailed results.")
+    # Generate comparative summary report for all algorithms
+    with open(results_dir / "summary_comparison.txt", "w", encoding='utf-8') as f:
+        f.write("# Comparative Algorithm Test Results\n\n")
+        
+        # Table header for comparison with fixed widths
+        f.write("| Test #   | Algorithm   | Success   | Time (s)  | Path Cost   |\n")
+        f.write("|----------|-------------|-----------|-----------|-------------|\n")
+        
+        # Group by test file
+        for i, test_file in enumerate(test_files, 1):
+            test_name = test_file.name
+            test_num = re.search(r'test_(\d+)\.txt', test_name).group(1) if re.search(r'test_(\d+)\.txt', test_name) else i
+            
+            for algorithm in algorithms:
+                results = [r for r in all_results[algorithm] if r["test_file"] == test_name]
+                if results:
+                    result = results[0]
+                    # Use "Yes" and "No" instead of Unicode symbols to avoid encoding issues
+                    success = "Yes" if result["success"] else "No"
+                    cost = result["cost"] if result["success"] else "N/A"
+                    f.write(f"| {test_num:<8} | {algorithm:<11} | {success:<9} | {result['execution_time']:.3f} | {cost:<11} |\n")
+    
+    print(f"\nAll testing complete. See {results_dir} for detailed results.")
 
 if __name__ == "__main__":
     main()
