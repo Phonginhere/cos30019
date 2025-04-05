@@ -67,3 +67,31 @@ def roulette_wheel_selection(probabilities: Dict[str, float]) -> str:
             
     # Fallback: return random item (should rarely happen)
     return random.choice(list(probabilities.keys()))
+
+def pseudo_random_proportional_selection(value: Dict[str, float], probabilities: Dict[str, float]) -> str:
+    """Select a key from a dictionary based on probability values
+    
+    Args:
+        value: Dict mapping items to their value (result of compute_edge_desirability)
+        
+    Returns:
+        The selected key
+    """
+
+    
+    # Pick a random point on the probability line
+    r = random.random() 
+    
+    threshold = 0.5
+    
+    # Check if the random number is less than the threshold
+    if r < threshold:
+        # Select the key with the maximum value
+        max_key = max(value, key=value.get)
+        return max_key
+    else:
+        # Perform roulette wheel selection
+        selected_key = roulette_wheel_selection(probabilities)
+        return selected_key
+    
+    

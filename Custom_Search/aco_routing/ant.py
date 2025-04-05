@@ -124,7 +124,7 @@ class Ant:
             Dict[str, float]: A dictionary mapping nodes to their transition probabilities
         """
         probabilities: Dict[str, float] = {}
-
+        transition_values: Dict[str, float] = {}
         all_edges_desirability = self._compute_all_edges_desirability(
             unvisited_neighbors
         )
@@ -149,9 +149,10 @@ class Ant:
             current_edge_desirability = utils.compute_edge_desirability(
                 edge_pheromones, edge_cost, edge_distance, self.alpha, self.beta, self.mode
             )
+            transition_values[neighbor] = current_edge_desirability
             probabilities[neighbor] = current_edge_desirability / all_edges_desirability
 
-        return probabilities
+        return probabilities, transition_values
 
     def _choose_next_node(self) -> Union[str, None]:
         """Choose the next node to be visited by the ant"""
@@ -168,15 +169,6 @@ class Ant:
             # Prioritize unvisited nodes, especially if few remain
             unvisited_neighbors = [n for n in self.graph_api.get_neighbors(self.current_node) 
                                 if n in unvisited]
-            
-            # If no unvisited neighbors but we haven't visited all nodes yet,
-            # we may need to revisit some nodes to reach the remaining unvisited ones
-            if not unvisited_neighbors and unvisited:
-                # Try to find a path to any unvisited node
-                neighbors = self.graph_api.get_neighbors(self.current_node)
-                if neighbors:
-                    return neighbors[0]  # Go to any neighbor to continue exploration
-                return None
         else:
             # Original implementation for other modes
             unvisited_neighbors = self._get_unvisited_neighbors()
@@ -186,8 +178,8 @@ class Ant:
             return None
 
         # For regular ants, use probabilistic selection
-        probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
-        return utils.roulette_wheel_selection(probabilities)
+        transition_values ,probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
+        return utils.pseudo_random_proportional_selection(transition_values, probabilities)
 
     def take_step(self) -> None:
         """Compute and update the ant position"""
