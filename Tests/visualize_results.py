@@ -5,7 +5,6 @@ import re
 import pandas as pd
 from pathlib import Path
 import seaborn as sns
-from collections import defaultdict
 
 def parse_results_directory(results_dir):
     """

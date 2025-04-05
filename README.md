@@ -223,7 +223,7 @@ aco = ACO(
     visualize=True,              # Enable/disable visualization
     visualization_step=10        # Update frequency (iterations)
 )
-
+```
 ## Contributors
 
 - **Phong Tran**: BFS, DFS, and Dijkstra's Algorithm
