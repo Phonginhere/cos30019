@@ -88,30 +88,30 @@ class ACO:
     def _deploy_forward_search_ants(self) -> float:
         iteration_best_path_cost = float("inf")
         
-        # Dictionary to track ant positions for visualization
-        ant_positions = {}
-        
-        for i, ant in enumerate(self.search_ants):
-            # Track initial position
-            ant_positions[f"ant_{i}"] = ant.current_node
+        for ant in self.search_ants:
             
             # Process each ant until it reaches destination or max steps
-            for step in range(self.ant_max_steps):
+            for _ in range(self.ant_max_steps):
                 if ant.reached_destination():
                     ant.is_fit = True
+                    
+                    if ant.path_cost == 0:
+                        self.best_path_cost = 0
+                        return 0
+                    
                     if ant.path_cost <= self.best_path_cost:
                         self.best_path = ant.path.copy()
                         self.best_path_cost = ant.path_cost
+                        
                     if ant.path_cost <= iteration_best_path_cost:
                         iteration_best_path_cost = ant.path_cost
+                        
                     break
                     
                 ant.take_step()
-                # Update ant position for visualization
-                ant_positions[f"ant_{i}"] = ant.current_node
         
         # Return ant positions for visualization
-        return iteration_best_path_cost, ant_positions
+        return iteration_best_path_cost
             
     def _deploy_backward_search_ants(self, iteration, iteration_best_path_cost) -> (float, float):
         for ant in self.search_ants:
@@ -125,7 +125,6 @@ class ACO:
                     if ant.path_cost == self.best_path_cost:
                         ant.deposit_pheromones_on_path(elitist_param = 0.2)
                     self.graph_api.deposit_pheromones_for_path(self.best_path)
-                    
         max_pheromone = self.graph_api.pheromone_deposit_weight/self.best_path_cost
         min_pheromone = self.min_scaling_factor * max_pheromone
         return max_pheromone, min_pheromone
@@ -163,7 +162,12 @@ class ACO:
                     self.search_ants.append(ant)
 
             # Deploy ants and get progress
-            iteration_best_path_cost, ant_positions = self._deploy_forward_search_ants()
+            iteration_best_path_cost = self._deploy_forward_search_ants()
+            
+            # Handle case where destination is origin
+            if (iteration_best_path_cost == 0):
+                break
+            
             max_pheromon, min_pheromon = self._deploy_backward_search_ants(iteration, iteration_best_path_cost)        
             
             # Update pheromones after each iteration
@@ -175,7 +179,7 @@ class ACO:
             
             # Visualization update
             if self.visualize and (iteration % self.visualization_step == 0):
-                self.visualizer.update_state(iteration + 1, self.best_path, self.best_path_cost, ant_positions)
+                self.visualizer.update_state(iteration + 1, self.best_path, self.best_path_cost)
 
     def find_shortest_path(
         self,

@@ -31,24 +31,18 @@ class ACOVisualizer:
         self.best_path_cost = float('inf')
         self.animation = None
         
-        # For storing ant positions
-        self.ant_positions = {}
         
-    def update_state(self, iteration, best_path, best_path_cost, ant_positions=None):
+    def update_state(self, iteration, best_path, best_path_cost):
         """Update the visualization state with the current algorithm progress.
         
         Args:
             iteration: Current iteration number
             best_path: Current best path
             best_path_cost: Current best path cost
-            ant_positions: Dictionary of ant positions {ant_id: node}
         """
         self.current_iteration = iteration
         self.best_path = best_path
         self.best_path_cost = best_path_cost
-        
-        if ant_positions:
-            self.ant_positions = ant_positions
             
         # Create a frame of the current state
         self.visualize_current_state()

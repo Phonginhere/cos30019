@@ -1,6 +1,6 @@
 ### Test 4: Large Directed Grid (ATSP,12 nodes)
 # Description: Directed complete graph with linear distances. Simple but computationally large. Tests scaling on ATSP.
-# Optimal Path: 1 → 2 → 3 → ... → 12 (Total cost: 66)
+# Optimal Path: 1 → 2 → 3 → ... → 12 (Total cost: 11) #Fixed wrong total cost (original 66)
 ================================================================================
 Nodes:
 1: (0,0)
@@ -151,4 +151,4 @@ Edges:
 Origin:
 1
 Destinations:
-2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+12

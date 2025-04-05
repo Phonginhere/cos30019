@@ -63,9 +63,9 @@ def main():
         evaporation_rate=evaporation_rate, 
         alpha=alpha, 
         beta=beta, 
-        mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
+        mode=1, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=None, # Setting log, Int or None
-        visualize=False,  # Enable visualization
+        visualize=None,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
     )
 
@@ -74,8 +74,13 @@ def main():
         destination=destinations,
         num_ants=num_ants,
     )
-    
-    if not aco_path:
+
+    if aco_cost == 0:
+        print(f"{file_path} CUS2")
+        print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
+        print(f"Destination already reached: Origin {origin} to destination {destinations}")
+        print("0.0")
+    elif not aco_path:
         # No path found but no exception thrown
         print(f"{file_path} CUS2")
         print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
