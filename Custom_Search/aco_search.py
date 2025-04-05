@@ -63,7 +63,7 @@ def main():
         evaporation_rate=evaporation_rate, 
         alpha=alpha, 
         beta=beta, 
-        mode=1, # 0: any destination, 1: all destinations, 2: TSP mode
+        mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=None, # Setting log, Int or None
         visualize=None,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations

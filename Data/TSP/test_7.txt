@@ -1,6 +1,6 @@
 ### Test 7: Small Symmetric Circle (STSP,8 nodes)
 # Description: Nodes arranged in a circle,symmetric edge costs. Tests correct cycle wrapping and path symmetry.
-# Optimal Path: 1 → 2 → 3 → ... → 8 → 1 (Total cost: 14)
+# Optimal Path: 1 → 2 → 3 → ... → 8 → 1 (Total cost: 14) # Pink note: There are more optimal Hamiltonian cycle (7-7,..) which only 8 cost
 ================================================================================
 Nodes:
 1: (0,0)

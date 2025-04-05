@@ -1,6 +1,6 @@
 ### Test 10: Random Edge Weights (STSP,8 nodes)
 # Description: Small graph with mod-based weights. Verifies handling arbitrary cost patterns.
-# Optimal Path: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 1 (Total cost varies,approx. 28)
+# Optimal Path: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 1 (Total cost varies,approx. 28) # Pink note: There are more optimal Hamiltonian cycle (18 cost)
 ================================================================================
 Nodes:
 1: (0,0)

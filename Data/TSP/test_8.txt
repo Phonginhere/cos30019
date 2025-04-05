@@ -1,6 +1,6 @@
 ### Test 8: Clustered Groups (STSP,10 nodes)
 # Description: Nodes are in two clusters (1-5,6-10). Tests minimizing inter-cluster transitions.
-# Optimal Path: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 1 (Total cost: 180)
+# Optimal Path: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 1 (Total cost: 180) # shorest Hamiltonian cycle is 180
 ================================================================================
 Nodes:
 1: (10,10)

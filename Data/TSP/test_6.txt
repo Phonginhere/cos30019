@@ -1,6 +1,6 @@
 ### Test 6: Return Trap (STSP,10 nodes)
 # Description: Symmetric TSP where return edge (10→1) is expensive. Tests the algorithm’s ability to minimize total cycle cost.
-# Optimal Path: 1 → 2 → ... → 10 → 1 (Total cost: 109)
+# Optimal Path: 1 → 2 → ... → 10 → 1 (Total cost: 109) #Pink Note: the Hamiltonian cycle is vary but optimal solution is 109 cost
 ================================================================================
 Nodes:
 1: (0,0)
