@@ -1,4 +1,4 @@
-### Test 11: Multiple Exits,One Short (Modified,10 nodes)
+### Test 1: Multiple Exits,One Short (Modified,10 nodes)
 # Description: Path from 1 to 10 is linear. Shortest exit is node 5.
 # Optimal Path: 1 → 2 → 3 → 4 → 5 (Total cost: 4)
 ================================================================================
@@ -26,4 +26,4 @@ Edges:
 Origin:
 1
 Destinations:
-10; 5; 7
+5; 10; 7

@@ -62,6 +62,13 @@ class GraphApi:
         for i in range(len(path) - 1):
             u = path[i]
             v = path[i + 1]
+            
+            # This ensures that pheromones are deposited even if the edge cost is zero
+            if self.get_edge_cost(u, v) == 0.0:
+                self.set_edge_pheromones(u, v, 0.01)
+                if hasattr(self, '_edge_cost_cache') and (u, v) in self._edge_cost_cache:
+                    self._edge_cost_cache[(u, v)] = 0.01
+                    
             pheromone_amount = self.pheromone_deposit_weight / self.get_edge_cost(u, v)
             self.deposit_pheromones(u, v, pheromone_amount)
             

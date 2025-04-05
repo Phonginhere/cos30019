@@ -53,7 +53,6 @@ def main():
             
             # Check if the module exists
             if os.path.exists(module_path):
-                print(f"Loading ACO module from: {module_path}")
                 
                 # Import the module
                 spec = importlib.util.spec_from_file_location("aco_search", module_path)

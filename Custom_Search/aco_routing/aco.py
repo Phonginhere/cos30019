@@ -201,12 +201,16 @@ class ACO:
         """
         # Verify the graph has the required nodes
         if source not in self.graph.nodes():
-            raise ValueError(f"Source node {source} not in graph")
+            raise ValueError(f"Source node {source} cannot access in graph")
         
-        if self.mode != 2:  # Only check destination for non-TSP modes
+        if self.mode == 1:
             for dest in destination:
                 if dest not in self.graph.nodes():
-                    raise ValueError(f"Destination node {dest} not in graph")
+                    raise ValueError(f"Destination node {dest} cannot access in graph")
+        elif self.mode == 0:
+            if all(dest not in self.graph.nodes() for dest in destination):
+                raise ValueError(f"Destination nodes {destination} cannot access in graph")
+            
         
         # Reset best path and cost
         self.best_path = []

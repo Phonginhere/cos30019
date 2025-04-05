@@ -63,12 +63,11 @@ def main():
         evaporation_rate=evaporation_rate, 
         alpha=alpha, 
         beta=beta, 
-        mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
+        mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=None, # Setting log, Int or None
-        visualize=None,  # Enable visualization
+        visualize=True,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
     )
-
     aco_path, aco_cost = aco.find_shortest_path(
         source=origin,
         destination=destinations,
