@@ -40,6 +40,7 @@ def main():
         network = DijkstraNetwork()
         network.build_from_data(nodes, edges)
 
+        
         # Find and display the shortest path to any destination
         shortest_path, shortest_dest, shortest_cost = network.find_shortest_path_to_destinations(origin, destinations)
 
