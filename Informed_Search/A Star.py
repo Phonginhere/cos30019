@@ -4,14 +4,6 @@ import numpy as np
 import re
 import math
 
-# define the A* algorithm
-"""
-define heuristic from a to b
-get g_score
-get f_score
-
-"""
-
 class Node:
     def __init__(self, start_node, total_score, g_score, f_score):
         self.start_node = start_node
@@ -27,8 +19,7 @@ def find_f_score(pos, current, goal):
     goal_x, goal_y = int(pos[goal][0]), int(pos[goal][1])
     current_x, current_y = int(pos[current][0]), int(pos[current][1])
 
-    return math.sqrt((goal_x - current_x)**2 + (goal_y - current_y)**2)
-
+    return math.sqrt((goal_x - current_x)**2 + (goal_y - current_y)**2
     
 def find_next_node(pos, current, goal, heuristic):
     heuristic_value = []
@@ -41,7 +32,6 @@ def find_next_node(pos, current, goal, heuristic):
     return heapq.heappop(heuristic_value)
 
 def a_star(positions, start, goal, heuristic):
-    
     # path dictionary to track the explored paths
     path = {start: None}
 
