@@ -33,7 +33,7 @@ def main():
         nodes, edges, origin, destinations = parse_graph_file(file_path)
 
         # Print goals and number of nodes
-        print(f"{file_path} CUS1")
+        print(f"{file_path} DFS")
         print(f"[{', '.join(destinations)}]", len(nodes))
 
         # Create the DfsNetwork instance
