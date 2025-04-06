@@ -73,11 +73,21 @@ def pseudo_random_proportional_selection(value: Dict[str, float], probabilities:
     
     Args:
         value: Dict mapping items to their value (result of compute_edge_desirability)
+        probabilities: Dict mapping items to their probabilities
         
     Returns:
-        The selected key
+        The selected key or None if no valid options
     """
-
+    # Guard against empty dictionary or non-dictionary input
+    if not value or not isinstance(value, dict):
+        return None
+    
+    if len(value) == 0:
+        return None
+        
+    # Handle the case where there's only one option
+    if len(value) == 1:
+        return list(value.keys())[0]
     
     # Pick a random point on the probability line
     r = random.random() 
@@ -87,11 +97,14 @@ def pseudo_random_proportional_selection(value: Dict[str, float], probabilities:
     # Check if the random number is less than the threshold
     if r < threshold:
         # Select the key with the maximum value
-        max_key = max(value, key=value.get)
-        return max_key
+        try:
+            max_key = max(value, key=value.get)
+            return max_key
+        except (TypeError, AttributeError):
+            # Fallback in case of unexpected value types
+            return None if not value else random.choice(list(value.keys()))
     else:
         # Perform roulette wheel selection
         selected_key = roulette_wheel_selection(probabilities)
         return selected_key
-    
-    
+

@@ -1,6 +1,7 @@
 ###Test 9: Cycle Trap (5 nodes)
 #Description: Graph contains a cycle that does not lead to the goal. Tests handling of loops (algorithms must avoid infinite traversal of 1-2-3).
 #Optimal Path: 1 → 2 → 4 (Total cost: 2)
+# 5 is the invalid destination
 ================================================================================
 Nodes:
 1: (0,0)
@@ -16,4 +17,4 @@ Edges:
 Origin:
 1
 Destinations:
-4; 5
+4

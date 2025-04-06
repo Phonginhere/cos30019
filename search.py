@@ -9,7 +9,7 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python search.py <algorithm> [optional arguments]")
         print("   OR: python search.py <input_file> <algorithm>")
-        print("Available algorithms: CUS2 (ACO), BFS, DFS, AS, GBFS, CUS1 (Dijkstra)")
+        print("Available algorithms: CUS2 (ACO), BFS, DFS, AS/ASTAR, GBFS, CUS1 (Dijkstra)")
         sys.exit(1)
 
     # Parse command line arguments - support both formats
@@ -20,7 +20,7 @@ def main():
     first_arg = sys.argv[1]
     
     # List of recognized algorithms
-    algorithms = ["CUS2", "BFS", "DFS", "AS", "GBFS", "CUS1"]
+    algorithms = ["CUS2", "BFS", "DFS", "AS", "ASTAR", "GBFS", "CUS1"]
     
     # Determine if the first argument is an algorithm or a file path
     if first_arg in algorithms:
@@ -38,6 +38,10 @@ def main():
         print("             OR: python search.py <input_file> <algorithm>")
         print(f"Recognized algorithms: {', '.join(algorithms)}")
         sys.exit(1)
+
+    # Normalize algorithm name (handle ASTAR as AS)
+    if algorithm == "ASTAR":
+        algorithm = "AS"
 
     # Execute the appropriate algorithm
     if algorithm == "CUS2":

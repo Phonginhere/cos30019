@@ -257,7 +257,7 @@ def create_comparative_visualizations(all_results, output_dir):
     
     plt.figure(figsize=(14, len(algorithms) * 0.8))
     sns.heatmap(success_matrix, cmap=['red', 'green'], cbar=False, 
-                linewidths=.5, annot=True, fmt='d')
+                linewidths=.5, annot=True, fmt='.0f')
     plt.title('Test Success by Algorithm and Test Case')
     plt.savefig(os.path.join(comp_dir, 'success_heatmap.png'), dpi=300, bbox_inches='tight')
     plt.close()

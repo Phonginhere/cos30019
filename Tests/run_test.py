@@ -138,7 +138,7 @@ def get_test_info_from_parser(test_file_path):
 
 def main():
     # Available algorithms to test
-    algorithms = ["BFS", "DFS", "CUS1", "CUS2"]  # ASTAR and GBFS are placeholders
+    algorithms = ["BFS", "DFS", "ASTAR", "GBFS", "CUS1", "CUS2"]
     
     # Create test results directory if it doesn't exist
     results_dir = project_root / "Tests" / "Results"

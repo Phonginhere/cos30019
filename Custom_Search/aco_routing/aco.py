@@ -211,7 +211,6 @@ class ACO:
             if all(dest not in self.graph.nodes() for dest in destination):
                 raise ValueError(f"Destination nodes {destination} cannot access in graph")
             
-        
         # Reset best path and cost
         self.best_path = []
         self.best_path_cost = float("inf")
