@@ -47,8 +47,6 @@ def GBFS_search(graph, start, goal, heuristic):
         heapq.heappush(priority_queue, next_node)
         if next_node.start not in path:
             path[next_node.start] = current_node
-
-        print(path)
         
     return None
 
@@ -130,8 +128,6 @@ graph = {
     '6': ['3']
 }
 
-import re
-
 def parse_graph_file(file_path):
     """
     Parses a text file containing graph data and extracts nodes, edges, origin, and destinations.
@@ -194,7 +190,7 @@ def parse_graph_file(file_path):
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "a.txt"  # Replace with your actual file name
+    file_path = "data.txt"  # Replace with your actual file name
     nodes, edges, origin, destinations = parse_graph_file(file_path)
     
     print("Nodes:", nodes)
