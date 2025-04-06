@@ -50,13 +50,12 @@ def main():
     node_count = G.number_of_nodes()
     
     ant_max_steps = node_count + 1
-    iterations = 2000
+    iterations = 500 # 500-2000 
     num_ants = node_count
     alpha = 1
     beta = 2
     evaporation_rate = 0.5
     
-    # Benchmarking Format
     # cost_results = []
     # for i in range(1):
     #     # Initialize ACO with optimized parameters
@@ -93,7 +92,7 @@ def main():
         evaporation_rate=evaporation_rate, 
         alpha=alpha, 
         beta=beta, 
-        mode=2, # 0: any destination, 1: all destinations, 2: TSP mode
+        mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=10, # Setting log, Int or None
         visualize=False,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
@@ -128,7 +127,7 @@ def main():
         print(f"{aco_cost}")
         
         # Only visualize final result
-        # aco.graph_api.visualize_graph(aco_path, aco_cost)
+        aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
