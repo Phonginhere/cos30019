@@ -5,20 +5,19 @@ import heapq
 import re
 
 class Node:
-    def __init__(self, start, end, heuristic):
+    def __init__(self, start, heuristic):
         self.start = start
-        self.end = end
         self.heuristic = heuristic
 
     def __lt__(self,  other):
         return self.heuristic < other.heuristic
     
-def find_smallest_heuristic(graph, current, heuristic, visited_list):
+def find_next_node(graph, current, heuristic, visited_list):
     heuristic_value = []
 
     for i in graph[current]:
         if i not in visited_list:
-            heapq.heappush(heuristic_value, Node(current, i, heuristic[(current, i)]))
+            heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
 
     return heapq.heappop(heuristic_value)
         
@@ -31,15 +30,11 @@ def GBFS_search(graph, start, goal, heuristic):
 
     # Priority queue to hold nodes to explore, sorted by heuristic value
     priority_queue = []
-    first = find_smallest_heuristic(graph, start, heuristic, visited)
+    first = Node(start, 0)
     heapq.heappush(priority_queue, first)
 
-    path[first.end] = first.start
-
-    visited.add(priority_queue[0].start) 
-
     while priority_queue:
-        current_node = heapq.heappop(priority_queue).end
+        current_node = heapq.heappop(priority_queue).start
         
         visited.add(current_node)
 
@@ -47,11 +42,11 @@ def GBFS_search(graph, start, goal, heuristic):
         if goal in visited:
             return reconstruct_path(path, start, goal)
 
-        # explore neighbors
-        next_node = find_smallest_heuristic(graph, current_node, heuristic, visited)
+        # find next node
+        next_node = find_next_node(graph, current_node, heuristic, visited)
         heapq.heappush(priority_queue, next_node)
-        if next_node.end not in path:
-            path[next_node.end] = current_node
+        if next_node.start not in path:
+            path[next_node.start] = current_node
 
         print(path)
         
