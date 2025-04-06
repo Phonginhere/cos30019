@@ -50,7 +50,7 @@ def main():
     node_count = G.number_of_nodes()
     
     ant_max_steps = node_count + 1
-    iterations = 2000 # 500-2000 
+    iterations = 500 # 500-2000 
     num_ants = node_count
     alpha = 1
     beta = 2
@@ -93,8 +93,8 @@ def main():
         alpha=alpha, 
         beta=beta, 
         mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
-        log_step=10, # Setting log, Int or None
-        visualize=True,  # Enable visualization
+        log_step=None, # Setting log, Int or None
+        visualize=False,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
     )
     aco_path, aco_cost = aco.find_shortest_path(
