@@ -93,7 +93,7 @@ def main():
         alpha=alpha, 
         beta=beta, 
         mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
-        log_step=10, # Setting log, Int or None
+        log_step=None, # Setting log, Int or None
         visualize=False,  # Enable visualization
         visualization_step=10  # Update visualization every 10 iterations
     )
@@ -127,7 +127,7 @@ def main():
         print(f"{aco_cost}")
         
         # Only visualize final result
-        aco.graph_api.visualize_graph(aco_path, aco_cost)
+        # aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
