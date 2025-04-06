@@ -209,7 +209,7 @@ graph = {
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "a.txt"  # Replace with your actual file name
+    file_path = "data.txt"  # Replace with your actual file name
     nodes, edges, origin, destinations = parse_graph_file(file_path)
     
     print("Nodes:", nodes)
