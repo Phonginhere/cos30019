@@ -1,7 +1,8 @@
+import heapq
 import matplotlib.pyplot as plt
 import numpy as np
-import heapq
 import re
+import math
 import sys, os
 
 # Import parser to read the graph file
@@ -16,49 +17,87 @@ sys.path.append(aco_routing_dir)
 from network import Network
 
 class Node:
-    def __init__(self, start, heuristic):
-        self.start = start
-        self.heuristic = heuristic
+    def __init__(self, start_node, total_score, g_score, f_score):
+        self.start_node = start_node
+        self.g_score = g_score
+        self.f_score = f_score
+        self.total_score = total_score
 
     def __lt__(self,  other):
-        return self.heuristic < other.heuristic
+        return self.total_score < other.total_score
+
+# finding straight line value between current and goal nodes
+def find_f_score(pos, current, goal):
+    goal_x, goal_y = int(pos[goal][0]), int(pos[goal][1])
+    current_x, current_y = int(pos[current][0]), int(pos[current][1])
+
+    return math.sqrt((goal_x - current_x)**2 + (goal_y - current_y)**2)
     
-def find_next_node(graph, current, heuristic, visited_list):
+def find_next_node(graph, pos, current, goal, heuristic, visited_list):
     heuristic_value = []
 
     for i in graph[current]:
         if i not in visited_list:
-            heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
-
-    return heapq.heappop(heuristic_value)
+            g_score = heuristic[(current, i)]
+            f_score = find_f_score(pos, i, goal)
+            heapq.heappush(heuristic_value, Node(i, g_score + f_score, g_score=g_score, f_score=f_score))
+    
+    if not heuristic_value:
+        return None
         
+    return heapq.heappop(heuristic_value)
 
-def GBFS_search(graph, start, goal, heuristic):
+def a_star(graph, positions, start, goal, heuristic):
     # path dictionary to track the explored paths
-    path = {start:None}
+    path = {start: None}
 
-    visited = set() # to keep track of visited nodes
+    # to keep track of visited nodes
+    visited = set()
+
+    g_scores = {start: 0}
+    f_scores = {start: find_f_score(positions, start, goal)}
 
     # Priority queue to hold nodes to explore, sorted by heuristic value
     priority_queue = []
-    first = Node(start, 0)
+    first = Node(start, g_scores[start] + f_scores[start], 0, find_f_score(positions, start, goal=goal))
     heapq.heappush(priority_queue, first)
 
     while priority_queue:
-        current_node = heapq.heappop(priority_queue).start
+        current = heapq.heappop(priority_queue)
+        current_node = current.start_node
         
+        if current_node == goal:
+            return reconstruct_path(path, start, goal)
+            
+        if current_node in visited:
+            continue
+            
         visited.add(current_node)
 
-        # if the goal is reached, reconstruct the path
-        if goal in visited:
-            return reconstruct_path(path, start, goal)
-
-        # find next node
-        next_node = find_next_node(graph, current_node, heuristic, visited)
-        heapq.heappush(priority_queue, next_node)
-        if next_node.start not in path:
-            path[next_node.start] = current_node
-        
+        # Explore neighbors
+        for neighbor in graph[current_node]:
+            if neighbor in visited:
+                continue
+                
+            # Calculate tentative g score
+            tentative_g_score = g_scores[current_node] + heuristic[(current_node, neighbor)]
+            
+            # If this path to neighbor is better than any previous one
+            if neighbor not in g_scores or tentative_g_score < g_scores[neighbor]:
+                # Update path
+                path[neighbor] = current_node
+                g_scores[neighbor] = tentative_g_score
+                f_scores[neighbor] = tentative_g_score + find_f_score(positions, neighbor, goal)
+                
+                # Add to priority queue
+                heapq.heappush(priority_queue, Node(
+                    neighbor, 
+                    g_scores[neighbor] + f_scores[neighbor],
+                    g_scores[neighbor],
+                    f_scores[neighbor]
+                ))
+    
+    # No path found
     return None
 
 def reconstruct_path(path, start, goal):
@@ -67,12 +106,10 @@ def reconstruct_path(path, start, goal):
 
     while current is not None:
         result_path.append(current)
-        current = path[current]
-        # print(f"Result path: {result_path}")
+        current = path.get(current)
+    
     result_path.reverse()
-    # print("Path from {} to {}: {}".format(start, goal, result_path))
     return result_path
-
 
 def visualise(paths, pos, edges):
     fig, (ax1, ax2) = plt.subplots(1,2)
@@ -130,6 +167,16 @@ def visualise(paths, pos, edges):
 
     plt.show()
 
+# Example graph for testing
+graph = {
+    '1': ['3','4'],
+    '2': ['1','3'],
+    '3': ['1','2','5','6'],
+    '4': ['1','3','5'],
+    '5': ['3','4'],
+    '6': ['3']
+}
+
 def main():
     # Check if file path is provided as command line argument
     if len(sys.argv) >= 2:
@@ -151,7 +198,7 @@ def main():
     
     result_paths = []
     for dest in destinations:
-        result_path = GBFS_search(G.graph, origin, dest, edges)
+        result_path = a_star(G.graph, nodes, origin, dest, edges)
         result_paths.append(result_path)
 
     path_weights = []
@@ -167,7 +214,7 @@ def main():
     min_index = path_weights.index(min_weight)
     
     # Print the results
-    print(f"{file_path} GBFS")
+    print(f"{file_path} AS")
     print(f"{destinations} {len(nodes)}")
     print(f"{result_paths[min_index]}")
     print(f"{min_weight}")

@@ -164,12 +164,86 @@ def main():
             sys.exit(1)
 
     elif algorithm == "AS":
-        # Add A* implementation here
-        print("A* algorithm selected (not implemented yet)")
-        
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            search_dir = os.path.join(current_dir, "Informed_Search")
+            module_path = os.path.join(search_dir, "A_Star.py")
+            
+            # Add directory to sys.path
+            if search_dir not in sys.path:
+                sys.path.insert(0, search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(module_path):
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("A_Star", module_path)
+                astar_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(astar_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [module_path] + remaining_args
+                else:
+                    sys.argv = [module_path]
+
+                # Run the main function
+                astar_module.main()
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: Module {module_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing A* search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
+    
     elif algorithm == "GBFS":
-        # Add Greedy Best-First Search implementation here
-        print("Greedy Best-First Search algorithm selected (not implemented yet)")
+        try:
+            # Get paths
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            search_dir = os.path.join(current_dir, "Informed_Search")
+            module_path = os.path.join(search_dir, "GBFS.py")
+            
+            # Add directory to sys.path
+            if search_dir not in sys.path:
+                sys.path.insert(0, search_dir)
+            
+            # Check if the module exists
+            if os.path.exists(module_path):
+                
+                # Import the module
+                spec = importlib.util.spec_from_file_location("GBFS", module_path)
+                gbfs_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(gbfs_module)
+                
+                # Save original argv
+                original_argv = sys.argv.copy()
+                
+                # Update argv to pass the input file path if provided
+                if remaining_args:
+                    sys.argv = [module_path] + remaining_args
+                else:
+                    sys.argv = [module_path]
+
+                # Run the main function
+                gbfs_module.main()
+                
+                # Restore original argv
+                sys.argv = original_argv
+            else:
+                print(f"Error: Module {module_path} not found!")
+                sys.exit(1)
+        except Exception as e:
+            print(f"Error executing GBFS search: {e}")
+            traceback.print_exc()
+            sys.exit(1)
         
     elif algorithm == "CUS1":
         try:
