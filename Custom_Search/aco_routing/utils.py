@@ -97,13 +97,8 @@ def pseudo_random_proportional_selection(value: Dict[str, float], probabilities:
     # Check if the random number is less than the threshold
     if r < threshold:
         # Select the key with the maximum value
-        try:
-            max_key = max(value, key=value.get)
-            return max_key
-        except (TypeError, AttributeError):
-            # Handle case where there is no value (no valid visited nodes)
-            selected_key = roulette_wheel_selection(probabilities)
-            return selected_key
+        max_key = max(value, key=value.get)
+        return max_key
     else:
         # Perform roulette wheel selection
         selected_key = roulette_wheel_selection(probabilities)

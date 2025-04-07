@@ -121,7 +121,8 @@ class Ant:
             unvisited_neighbors (List[str]): A list of unvisited neighbors of the current node
 
         Returns:
-            Dict[str, float]: A dictionary mapping nodes to their transition probabilities
+            tuple: A tuple containing (probabilities, transition_values) where both are dictionaries
+                  mapping nodes to their respective values
         """
         probabilities: Dict[str, float] = {}
         transition_values: Dict[str, float] = {}
@@ -133,7 +134,9 @@ class Ant:
         if all_edges_desirability == 0:
             # Equal probability for all neighbors
             equal_prob = 1.0 / len(unvisited_neighbors) if unvisited_neighbors else 0
-            return {neighbor: equal_prob for neighbor in unvisited_neighbors}
+            equal_probs = {neighbor: equal_prob for neighbor in unvisited_neighbors}
+            # Return consistent tuple format (probabilities, transition_values)
+            return equal_probs, equal_probs
 
         for neighbor in unvisited_neighbors:
             edge_pheromones = self.graph_api.get_edge_pheromones(
@@ -178,7 +181,7 @@ class Ant:
             return None
 
         # For regular ants, use probabilistic selection
-        transition_values ,probabilities = self._calculate_edge_probabilities(unvisited_neighbors)
+        probabilities, transition_values = self._calculate_edge_probabilities(unvisited_neighbors)
         return utils.pseudo_random_proportional_selection(transition_values, probabilities)
 
     def take_step(self) -> None:
