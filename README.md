@@ -133,7 +133,7 @@ The project includes a testing framework to evaluate all algorithms on multiple 
 
 ```bash
 # Run tests on all algorithms (BFS, DFS, CUS1, CUS2)
-python Tests/run_aco_test.py
+python Tests/run_test.py
 ```
 
 This will:
