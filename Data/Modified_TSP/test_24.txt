@@ -20,4 +20,4 @@ Edges:
 Origin:
 1
 Destinations:
-2; 3; 4; 8
+2; 3; 4

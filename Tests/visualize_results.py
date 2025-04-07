@@ -40,12 +40,24 @@ def parse_results_directory(results_dir):
             with open(summary_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 
+            # First read the header information to get actual success/fail counts
+            header_match = re.search(r'Tests run: (\d+)\nSuccessful: (\d+)\nFailed: (\d+)', content)
+            if header_match:
+                total_tests = int(header_match.group(1))
+                successful_tests = int(header_match.group(2))
+                failed_tests = int(header_match.group(3))
+                print(f"Found header info for {algorithm}: {successful_tests}/{total_tests} successful")
+            
             # Extract test results from markdown table
-            table_pattern = r'\|\s*(\d+)\s*\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|\s*([\d\.]+)\s*\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|'
+            # Modified pattern to also match "Unknown" test numbers
+            table_pattern = r'\|\s*(Unknown|\d+)\s*\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|\s*([\d\.]+)\s*\|\s*([^\|]+)\s*\|\s*([^\|]+)\s*\|'
             matches = re.findall(table_pattern, content)
             
             for match in matches:
-                test_num = int(match[0])
+                # Handle both numeric and "Unknown" test numbers
+                test_num_str = match[0].strip()
+                test_num = int(test_num_str) if test_num_str.isdigit() else -1  # Use -1 for Unknown
+                
                 origin = match[1].strip()
                 destinations = match[2].strip()
                 time = float(match[3])
@@ -67,10 +79,15 @@ def parse_results_directory(results_dir):
                     "path": path
                 })
                 
-            # Sort by test number
-            results.sort(key=lambda x: x["test_num"])
+            # Verify that the parsed results match the header counts
+            parsed_success_count = sum(1 for r in results if r["success"])
+            if header_match and parsed_success_count != successful_tests:
+                print(f"Warning: {algorithm} parsed {parsed_success_count} successful tests, but header claims {successful_tests}")
+            
+            # Sort by test number (keep Unknown tests at the end)
+            results.sort(key=lambda x: float('inf') if x["test_num"] == -1 else x["test_num"])
             algorithm_results[algorithm] = results
-            print(f"Parsed {len(results)} test results for {algorithm}")
+            print(f"Parsed {len(results)} test results for {algorithm} ({parsed_success_count} successful)")
             
         except Exception as e:
             print(f"Error parsing {summary_file}: {str(e)}")
@@ -305,12 +322,17 @@ def create_comparative_visualizations(all_results, output_dir):
         if summary_df[col].max() > 0:
             summary_df[col] = summary_df[col] / summary_df[col].max() * 100
     
-    # Create radar chart
+    # Setup for radar charts
     labels = ['Success Rate', 'Speed', 'Efficiency']
     num_vars = len(labels)
     angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
     angles += angles[:1]  # Close the loop
     
+    # Create individual radar charts for each algorithm
+    radar_dir = os.path.join(comp_dir, "Radar_Charts")
+    os.makedirs(radar_dir, exist_ok=True)
+    
+    # 6.1 First create a combined radar chart for reference
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
     
     for i, algorithm in enumerate(summary_df['Algorithm']):
@@ -325,10 +347,58 @@ def create_comparative_visualizations(all_results, output_dir):
     ax.set_thetagrids(np.degrees(angles[:-1]), labels)
     ax.set_ylim(0, 105)
     plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
-    plt.title('Algorithm Performance Comparison', size=20, y=1.05)
+    plt.title('Combined Algorithm Performance Comparison', size=20, y=1.05)
     plt.tight_layout()
-    plt.savefig(os.path.join(comp_dir, 'algorithm_radar.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(comp_dir, 'algorithm_radar_combined.png'), dpi=300, bbox_inches='tight')
     plt.close()
+    
+    # 6.2 Create individual radar charts
+    # Use different colors for each performance metric
+    colors = ['#FF5733', '#33FF57', '#3357FF']
+    
+    for algorithm in summary_df['Algorithm']:
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        
+        values = summary_df.loc[summary_df['Algorithm'] == algorithm, labels].values.flatten().tolist()
+        values += values[:1]  # Close the loop
+        
+        # Create the plot with a nice filled area
+        ax.plot(angles, values, linewidth=2, color='blue')
+        ax.fill(angles, values, alpha=0.25, color='blue')
+        
+        # Add metric values as text
+        for i, (angle, value) in enumerate(zip(angles[:-1], values[:-1])):
+            label_angle = angle
+            if -0.1 < label_angle < 0.1:  # top position
+                ha, va = 'center', 'bottom'
+            elif label_angle < np.pi:  # right side
+                ha, va = 'left', 'center'
+            else:  # left side
+                ha, va = 'right', 'center'
+                
+            ax.text(label_angle, value + 10, f"{value:.1f}%", 
+                    ha=ha, va=va, size=12, weight='bold', color=colors[i % len(colors)])
+        
+        # Set chart properties
+        ax.set_theta_offset(np.pi / 2)
+        ax.set_theta_direction(-1)
+        ax.set_thetagrids(np.degrees(angles[:-1]), labels, size=14)
+        
+        # Add reference circles at 25%, 50%, 75% and 100%
+        for r in [25, 50, 75, 100]:
+            circle = plt.Circle((0, 0), r, transform=ax.transData._b, 
+                               fill=False, edgecolor='gray', alpha=0.3, linestyle='--')
+            ax.add_patch(circle)
+            if r < 100:  # Don't add text for the outermost circle to reduce clutter
+                ax.text(np.pi/4, r, f"{r}%", ha='center', va='center', 
+                        color='gray', fontsize=8, alpha=0.8)
+        
+        ax.set_ylim(0, 105)
+        ax.grid(True, alpha=0.3)
+        plt.title(f'{algorithm} Performance Metrics', size=16, y=1.05)
+        plt.tight_layout()
+        plt.savefig(os.path.join(radar_dir, f'algorithm_radar_{algorithm}.png'), dpi=300, bbox_inches='tight')
+        plt.close()
     
     # 7. Create a summary markdown table
     with open(os.path.join(comp_dir, 'summary_comparison.md'), 'w') as f:

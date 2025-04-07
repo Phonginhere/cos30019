@@ -23,4 +23,4 @@ Edges:
 Origin:
 1
 Destinations:
-6; 7
+6

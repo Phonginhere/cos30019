@@ -1,5 +1,5 @@
 CUS2 Results Summary
-Total tests: 27
-Successful tests: 27 (100.0%)
-Average execution time: 0.479 seconds
-Average path cost: 10.074
+Total tests: 28
+Successful tests: 28 (100.0%)
+Average execution time: 0.483 seconds
+Average path cost: 9.643
