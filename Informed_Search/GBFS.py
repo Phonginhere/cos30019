@@ -9,6 +9,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 from parser import parse_graph_file
 
+
 # Import Network class from custom search directory
 aco_routing_dir = os.path.join(current_dir, '..', "Custom_Search", "aco_routing")
 sys.path.append(aco_routing_dir)
@@ -29,7 +30,9 @@ def find_next_node(graph, current, heuristic, visited_list):
     for i in graph[current]:
         if i not in visited_list:
             heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
-
+    if heuristic_value == None:
+        return None
+    print("Heuristic value:", heuristic_value[0])
     return heapq.heappop(heuristic_value)
         
 
@@ -43,6 +46,7 @@ def GBFS_search(graph, start, goal, heuristic):
     priority_queue = []
     first = Node(start, 0)
     heapq.heappush(priority_queue, first)
+    print("Current node:", first.start)
 
     while priority_queue:
         current_node = heapq.heappop(priority_queue).start
@@ -50,14 +54,20 @@ def GBFS_search(graph, start, goal, heuristic):
         visited.add(current_node)
 
         # if the goal is reached, reconstruct the path
-        if goal in visited:
-            return reconstruct_path(path, start, goal)
+        for i in goal:
+            if i in visited:
+                return reconstruct_path(path, start, goal)
 
         # find next node
+        
         next_node = find_next_node(graph, current_node, heuristic, visited)
-        heapq.heappush(priority_queue, next_node)
-        if next_node.start not in path:
-            path[next_node.start] = current_node
+        print("Next node:", next_node.start)
+        if next_node == None:
+            continue
+        else:
+            heapq.heappush(priority_queue, next_node)
+            if next_node.start not in path:
+                path[next_node.start] = current_node
         
     return None
 
@@ -132,12 +142,14 @@ def visualise(paths, pos, edges):
 
 def main():
     # Check if file path is provided as command line argument
-    if len(sys.argv) >= 2:
-        file_path = sys.argv[1]
-    else:
-        # Default file for testing
-        file_path = os.path.join("..", "Data", "Modified_TSP", "test_27.txt")
+    # if len(sys.argv) >= 2:
+    #     file_path = sys.argv[1]
+    # else:
+    #     # Default file for testing
+    #     file_path = os.path.join("..", "Data", "Modified_TSP", "test_27.txt")
     
+    file_path = "Data/Modified_TSP/test_11.txt"
+
     # Parse the file
     nodes, edges, origin, destinations = parse_graph_file(file_path)
     
@@ -149,10 +161,12 @@ def main():
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
     
+
+    print("Graph:", G.graph)
     result_paths = []
-    for dest in destinations:
-        result_path = GBFS_search(G.graph, origin, dest, edges)
-        result_paths.append(result_path)
+    result_path = GBFS_search(G.graph, origin, destinations, edges)
+
+    result_paths.append(result_path)
 
     path_weights = []
     
