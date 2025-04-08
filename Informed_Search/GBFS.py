@@ -9,11 +9,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 from parser import parse_graph_file
 
-
 # Import Network class from custom search directory
-aco_routing_dir = os.path.join(current_dir, '..', "Custom_Search", "aco_routing")
+aco_routing_dir = os.path.join(current_dir, "..", "Custom_Search", "aco_routing")
 sys.path.append(aco_routing_dir)
-
 from network import Network
 
 class Node:
@@ -27,14 +25,18 @@ class Node:
 def find_next_node(graph, current, heuristic, visited_list):
     heuristic_value = []
 
-    for i in graph[current]:
-        if i not in visited_list:
-            heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
-    if heuristic_value == None:
+    if graph[current] == []:
         return None
-    print("Heuristic value:", heuristic_value[0])
-    return heapq.heappop(heuristic_value)
+    else:
+        print("Current node:", current)
+        for i in graph[current]:
+            if i not in visited_list:
+                heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
         
+        if not heuristic_value:
+            return None
+        print("Heuristic value:", heuristic_value)
+        return heapq.heappop(heuristic_value)
 
 def GBFS_search(graph, start, goal, heuristic):
     # path dictionary to track the explored paths
@@ -46,7 +48,6 @@ def GBFS_search(graph, start, goal, heuristic):
     priority_queue = []
     first = Node(start, 0)
     heapq.heappush(priority_queue, first)
-    print("Current node:", first.start)
 
     while priority_queue:
         current_node = heapq.heappop(priority_queue).start
@@ -54,19 +55,17 @@ def GBFS_search(graph, start, goal, heuristic):
         visited.add(current_node)
 
         # if the goal is reached, reconstruct the path
-        for g in goal:
-            if current_node == g:
-                print("Goal reached:", current_node)
-                return reconstruct_path(path, start, current_node)
+        if goal in visited:
+            return reconstruct_path(path, start, goal)
 
         # find next node
-        
         next_node = find_next_node(graph, current_node, heuristic, visited)
-        print("Next node:", next_node.start)
-        if next_node == None:
-            continue
+        if next_node is None:
+            print("Dead end at node ", current_node)
+            return reconstruct_path(path, start, current_node)
         else:
             heapq.heappush(priority_queue, next_node)
+
             if next_node.start not in path:
                 path[next_node.start] = current_node
         
@@ -79,9 +78,8 @@ def reconstruct_path(path, start, goal):
     while current is not None:
         result_path.append(current)
         current = path[current]
-        # print(f"Result path: {result_path}")
+        
     result_path.reverse()
-    # print("Path from {} to {}: {}".format(start, goal, result_path))
     return result_path
 
 
@@ -143,16 +141,15 @@ def visualise(paths, pos, edges):
 
 def main():
     # Check if file path is provided as command line argument
-    # if len(sys.argv) >= 2:
-    #     file_path = sys.argv[1]
-    # else:
-    #     # Default file for testing
-    #     file_path = os.path.join("..", "Data", "Modified_TSP", "test_27.txt")
+    if len(sys.argv) >= 2:
+        file_path = sys.argv[1]
+    else:
+        # Default file for testing
+        file_path = os.path.join("Data", "Modified_TSP", "test_4.txt")
     
-    file_path = "Data/Modified_TSP/test_11.txt"
-
     # Parse the file
     nodes, edges, origin, destinations = parse_graph_file(file_path)
+    print("Nodes:", nodes)
     
     # Create Data Structure    
     G = Network()
@@ -161,21 +158,28 @@ def main():
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
+    print(G.graph)
     
-
-    print("Graph:", G.graph)
     result_paths = []
-    result_path = GBFS_search(G.graph, origin, destinations, edges)
-
-    result_paths.append(result_path)
-
     path_weights = []
-    
-    for path in result_paths:
+
+    for dest in destinations:
+        print("Starting search from ", origin, " to ", dest)
         weight = 0
-        for i in range(len(path)-1):
-            weight += edges[(path[i], path[i+1])]
+        result_path = GBFS_search(G.graph, origin, dest, edges)
+        if result_path[-1] != dest:
+            print(f"Path from {origin} to {dest} not found")
+            print(f"Path: {result_path}")
+        else:
+            print(f"Path from {origin} to {dest}: {result_path}")
+
+        for i in range(len(result_path)-1):
+            weight += edges[(result_path[i], result_path[i+1])]
+        
+        print(f"Path weight: {weight}\n")
+        
         path_weights.append(weight)
+        result_paths.append(result_path)
     
     # Pick the shortest path
     min_weight = min(path_weights)
