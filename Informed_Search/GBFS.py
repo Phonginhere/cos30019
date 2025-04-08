@@ -56,7 +56,7 @@ def GBFS_search(graph, start, goal, heuristic):
         # if the goal is reached, reconstruct the path
         for i in goal:
             if i in visited:
-                return reconstruct_path(path, start, goal)
+                return reconstruct_path(path, start, goal[i])
 
         # find next node
         
