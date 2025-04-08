@@ -48,6 +48,11 @@ This repository contains the implementation of various search algorithms for pat
    - Metaheuristic inspired by ant foraging behavior
    - Uses pheromone trails and heuristic information
 
+3. **Floyd-Warshall Algorithm** - Implemented by Pink
+   - All-pairs shortest path algorithm
+   - Precomputes optimal paths between all node pairs
+   - Used to enhance ACO performance by providing virtual edges
+
 ## Project Structure
 
 ```
@@ -227,5 +232,5 @@ aco = ACO(
 ## Contributors
 
 - **Phong Tran**: BFS, DFS, and Dijkstra's Algorithm
-- **Hong Anh Nguyen**: Ant Colony Optimization (ACO), Testing Framework
+- **Hong Anh Nguyen**: Ant Colony Optimization (ACO) + Floyd Warshall, Testing Framework
 - **James Luong**: A* Search, Greedy Best-First Search

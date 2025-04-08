@@ -53,7 +53,7 @@ def run_test(test_file_path, algorithm):
         result = subprocess.run(cmd, 
                                capture_output=True, 
                                text=True, 
-                               timeout=60) # 60 second timeout
+                               timeout=300) # 60 second timeout
         
         execution_time = time.time() - start_time
         

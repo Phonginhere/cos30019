@@ -14,6 +14,7 @@ from aco_routing.ant import Ant
 from aco_routing.graph_api import GraphApi
 from aco_routing.network import Network
 from aco_routing.aco_visualizer import ACOVisualizer  # Import the new visualizer
+from aco_routing.floyd_warshall import FloydWarshall  # Import the Floyd-Warshall algorithm
 
 class ACO:
     def __init__(
@@ -28,7 +29,8 @@ class ACO:
         min_scaling_factor: float = 0.01,
         log_step: int = None,
         visualize: bool = False,
-        visualization_step: int = 1
+        visualization_step: int = 1,
+        use_floyd_warshall: bool = False  # New parameter for Floyd-Warshall preprocessing
     ):
         """Initialize the ACO (Ant Colony Optimization) algorithm.
         
@@ -44,6 +46,7 @@ class ACO:
             log_step: Number of iterations between logs
             visualize: Whether to visualize the algorithm progress
             visualization_step: Frequency of visualization updates
+            use_floyd_warshall: Whether to preprocess the graph using Floyd-Warshall algorithm
         """
         # Store all parameters
         self.graph = graph
@@ -57,6 +60,7 @@ class ACO:
         self.log_step = log_step
         self.visualize = visualize
         self.visualization_step = visualization_step
+        self.use_floyd_warshall = use_floyd_warshall
         
         # Initialize other fields
         self.search_ants = []
@@ -67,6 +71,10 @@ class ACO:
         self.gt = 0.0 # Gradient
         self.acc = 0.0 # Accumulated gradient
         self.d_acc = 0.0 # Delta accumulated gradient
+        
+        # Preprocess the graph with Floyd-Warshall if requested
+        if self.use_floyd_warshall:
+            self._preprocess_with_floyd_warshall()
         
         # Initialize the Graph API
         self.graph_api = GraphApi(self.graph, self.evaporation_rate)
@@ -84,6 +92,23 @@ class ACO:
             r = random.uniform(min_temp, max_temp) # Random pheromone value between 0.1 and 1.0
             self.graph_api.set_edge_pheromones(u, v, max_temp - k * r * (max_temp-min_temp)) # Stochastic pheromone value
             self.graph_api.set_edge_delta_pheromones(u, v, 0.0)
+            
+    def _preprocess_with_floyd_warshall(self):
+        """Preprocess the graph using the Floyd-Warshall algorithm."""
+        # if self.log_step is not None:
+        #     print("Preprocessing graph with Floyd-Warshall algorithm...")
+        
+        # Create a FloydWarshall instance
+        fw = FloydWarshall(self.graph)
+        
+        # Run the algorithm
+        fw.run()
+        
+        # Update the graph with shortest paths
+        fw.update_graph_with_shortest_paths()
+        
+        if self.log_step is not None:
+            print(f"Floyd-Warshall preprocessing complete. Graph now has {self.graph.number_of_edges()} edges.")
 
     def _deploy_forward_search_ants(self) -> float:
         iteration_best_path_cost = float("inf")

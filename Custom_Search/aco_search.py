@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import argparse
+import time
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
@@ -19,14 +20,23 @@ def main():
     parser = argparse.ArgumentParser(description='ACO Search Algorithm')
     parser.add_argument('file_path', nargs='?', default="Data/PathFinder-Test.txt",
                         help='Path to the graph file (default: Data/PathFinder-Test.txt)')
+    parser.add_argument('--floyd-warshall', action='store_true',
+                        help='Use Floyd-Warshall algorithm to preprocess the graph before ACO')
+    parser.add_argument('--visualize', action='store_true',
+                        help='Enable visualization of the ACO process')
+    parser.add_argument('--iterations', type=int, default=500,
+                        help='Number of ACO iterations (default: 500)')
+    parser.add_argument('--ants', type=int, default=None,
+                        help='Number of ants to use (default: equal to number of nodes)')
     
     # Check if the script was called directly or through search.py
     if len(sys.argv) > 1:
         args = parser.parse_args()
         file_path = args.file_path
     else:
-        # Default file path if no arguments provided
+        # Default values if no arguments provided
         file_path = "Data/PathFinder-test.txt"
+
     
     try:
         nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -48,44 +58,31 @@ def main():
 
     # Calculate adaptive parameters
     node_count = G.number_of_nodes()
-    
+    use_floyd_warshall = True
+    visualize = False
+    iterations = 10
+    custom_ants = node_count 
     ant_max_steps = node_count + 1
-    iterations = 500 # 500-2000 
-    num_ants = node_count
+    num_ants = custom_ants if custom_ants is not None else node_count
     alpha = 1
     beta = 2
     evaporation_rate = 0.5
     
-    # cost_results = []
-    # for i in range(1):
-    #     # Initialize ACO with optimized parameters
-    #     aco = ACO(G, 
-    #             ant_max_steps=ant_max_steps,
-    #             num_iterations=iterations, 
-    #             evaporation_rate=evaporation_rate, 
-    #             alpha=alpha, 
-    #             beta=beta, 
-    #             mode=2, # 0: any destination, 1: all destinations, 2: TSP mode (random origin and all destinations)
-    #             log_step=None,
-    #             visualize=False,  # Enable visualization
-    #             visualization_step=10  # Update visualization every 10 iterations
-    #     )
-
-    #     aco_path, aco_cost = aco.find_shortest_path(
-    #         source=origin,
-    #         destination=destinations,
-    #         num_ants=num_ants
-    #     )
-    #     print(f"Iteration {i+1}:")
-    #     print(f"Cost: {aco_cost}")
-        
-    #     cost_results.append(aco_cost)
-        
-    # print("Minimum Cost:", min(cost_results))
-    # print("Maximum Cost:", max(cost_results))
-    # print("Average Cost:", sum(cost_results) / len(cost_results))
-        
-    # Output results Unit format
+    # Print algorithm configuration
+    # print(f"ACO Configuration:")
+    # print(f"- Graph: {file_path}")
+    # print(f"- Nodes: {node_count}")
+    # print(f"- Edges: {G.number_of_edges()}")
+    # print(f"- Iterations: {iterations}")
+    # print(f"- Number of ants: {num_ants}")
+    # print(f"- Using Floyd-Warshall preprocessing: {use_floyd_warshall}")
+    # print(f"- Visualization enabled: {visualize}")
+    # print("------------------------------")
+    
+    # Measure execution time
+    start_time = time.time()
+    
+    # Initialize ACO with optimized parameters
     aco = ACO(G, 
         ant_max_steps=ant_max_steps,
         num_iterations=iterations, 
@@ -94,15 +91,28 @@ def main():
         beta=beta, 
         mode=0, # 0: any destination, 1: all destinations, 2: TSP mode
         log_step=None, # Setting log, Int or None
-        visualize=False,  # Enable visualization
-        visualization_step=10  # Update visualization every 10 iterations
+        visualize=visualize,  # Enable visualization
+        visualization_step=10,  # Update visualization every 10 iterations
+        use_floyd_warshall=use_floyd_warshall  # Use Floyd-Warshall preprocessing
     )
+    
     aco_path, aco_cost = aco.find_shortest_path(
         source=origin,
         destination=destinations,
         num_ants=num_ants,
     )
+    
+    # Calculate execution time
+    # execution_time = time.time() - start_time
+    # print(f"\nExecution time: {execution_time:.4f} seconds")
+    
+    # Print path stats
+    # if aco_path:
+    #     print(f"Path length: {len(aco_path)} nodes")
+    #     print(f"Path cost: {aco_cost}")
+    #     print("------------------------------")
 
+    # Format the output for the assignment requirements
     if aco_cost == 0:
         print(f"{file_path} CUS2")
         print(f"[{', '.join(destinations)}] {G.number_of_nodes()}")
@@ -126,9 +136,9 @@ def main():
         print(f"{path_str}")
         print(f"{aco_cost}")
         
-        # Only visualize final result
-        # aco.graph_api.visualize_graph(aco_path, aco_cost)
+        # Only visualize final result if not already visualized during execution
+        # if not visualize:
+        #     aco.graph_api.visualize_graph(aco_path, aco_cost)
 
 if __name__ == "__main__":
     main()
-    

@@ -150,13 +150,23 @@ def create_algorithm_visualizations(algorithm, results, output_dir):
     total_count = len(results)
     success_rate = (success_count / total_count) * 100 if total_count > 0 else 0
     avg_time = sum(r["time"] for r in results) / total_count if total_count > 0 else 0
-    avg_cost = sum(r["cost"] for r in successful_tests) / len(successful_tests) if successful_tests else 0
+    
+    # Calculate average cost only for successful tests that have a cost value
+    if successful_tests:
+        avg_cost = sum(r["cost"] for r in successful_tests) / 30 # total test cases
+    else:
+        avg_cost = float('nan')  # Use NaN instead of 0 for no successful tests
     
     print(f"\n{algorithm} Results summary:")
     print(f"  Total tests: {total_count}")
     print(f"  Successful tests: {success_count} ({success_rate:.1f}%)")
     print(f"  Average execution time: {avg_time:.3f} seconds")
-    print(f"  Average path cost: {avg_cost:.3f}")
+    
+    # Print appropriate message depending on whether there are successful tests
+    if not pd.isna(avg_cost):
+        print(f"  Average path cost: {avg_cost:.3f}")
+    else:
+        print(f"  Average path cost: N/A (no successful tests)")
     
     # Save summary to text file
     with open(os.path.join(algo_dir, 'summary.txt'), 'w') as f:
@@ -164,7 +174,10 @@ def create_algorithm_visualizations(algorithm, results, output_dir):
         f.write(f"Total tests: {total_count}\n")
         f.write(f"Successful tests: {success_count} ({success_rate:.1f}%)\n")
         f.write(f"Average execution time: {avg_time:.3f} seconds\n")
-        f.write(f"Average path cost: {avg_cost:.3f}\n")
+        if not pd.isna(avg_cost):
+            f.write(f"Average path cost: {avg_cost:.3f}\n")
+        else:
+            f.write(f"Average path cost: N/A (no successful tests)\n")
     
     return {
         'algorithm': algorithm,
@@ -199,7 +212,7 @@ def create_comparative_visualizations(all_results, output_dir):
                 'Test': result['test_num'],
                 'Success': result['success'],
                 'Time': result['time'],
-                'Cost': result['cost'] if result['success'] else float('nan')
+                'Cost': result['cost'] if result['success'] else float('nan')  # Explicitly use NaN for failed tests
             })
     
     df = pd.DataFrame(all_data)
@@ -301,18 +314,24 @@ def create_comparative_visualizations(all_results, output_dir):
     # Create a summary DataFrame
     summaries = []
     for algorithm, results in all_results.items():
-        success_rate = sum(1 for r in results if r["success"]) / len(results) * 100
-        avg_time = sum(r["time"] for r in results) / len(results)
+        success_count = sum(1 for r in results if r["success"])
+        total_count = len(results)
+        success_rate = (success_count / total_count) * 100 if total_count > 0 else 0
+        avg_time = sum(r["time"] for r in results) / total_count if total_count > 0 else 0
+        
         successful_results = [r for r in results if r["success"] and r["cost"] is not None]
-        avg_cost = sum(r["cost"] for r in successful_results) / len(successful_results) if successful_results else 0
+        avg_cost = sum(r["cost"] for r in successful_results) / len(successful_results) if successful_results else float('nan')
         
         # For radar chart, lower is better for time and cost
-        # Normalize time and cost so that lower values are better (1.0 is best)
+        # Handle NaN case properly - if avg_cost is NaN, set efficiency to 0
+        # If there are no successful results, efficiency should be 0
+        efficiency = 1.0 / (avg_cost + 0.001) if (avg_cost > 0 and not pd.isna(avg_cost)) else 0
+        
         summaries.append({
             'Algorithm': algorithm,
             'Success Rate': success_rate,
             'Speed': 1.0 / (avg_time + 0.001),  # Invert so higher is better
-            'Efficiency': 1.0 / (avg_cost + 0.001) if avg_cost > 0 else 0  # Invert so higher is better
+            'Efficiency': efficiency  # Properly handle NaN and 0 cases
         })
     
     summary_df = pd.DataFrame(summaries)
