@@ -13,7 +13,7 @@ from parser import parse_graph_file
 # Import Network class from custom search directory
 aco_routing_dir = os.path.join(current_dir, "..", "Custom_Search", "aco_routing")
 sys.path.append(aco_routing_dir)
-print(aco_routing_dir)
+
 from network import Network
 
 class Node:
@@ -68,7 +68,6 @@ def a_star(graph, positions, start, goal, heuristic):
     while priority_queue:
         current = heapq.heappop(priority_queue)
         current_node = current.start_node
-        print(f"Current node: {current_node} (g: {current.g_score}, f: {current.f_score})")
         
         if current_node == goal:
             return reconstruct_path(path, start, goal)
@@ -80,7 +79,6 @@ def a_star(graph, positions, start, goal, heuristic):
 
         # Explore neighbors
         if graph[current_node] == []:
-            print("Dead end at node ", current_node)
             return reconstruct_path(path, start, current_node)
         else:
             for neighbor in graph[current_node]:
@@ -104,8 +102,6 @@ def a_star(graph, positions, start, goal, heuristic):
                         g_scores[neighbor],
                         f_scores[neighbor]
                     ))
-        
-        print("Path:", path)
     
     # No path found
     return None
@@ -119,7 +115,6 @@ def reconstruct_path(path, start, goal):
         current = path.get(current)
     
     result_path.reverse()
-    print("Reconstructed path:", result_path)
     return result_path
 
 def visualise(paths, pos, edges):
@@ -206,26 +201,25 @@ def main():
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
-    print(G.graph)
     
     result_paths = []
     path_weights = []
 
     for dest in destinations:
-        print("Starting search from ", origin, " to ", dest)
+        # print("Starting search from ", origin, " to ", dest)
         weight = 0
         result_path = a_star(G.graph, nodes, origin, dest, edges)
 
-        if result_path[-1] != dest:
-            print(f"Path from {origin} to {dest} not found")
-            print(f"Path: {result_path}")
-        else:
-            print(f"Path from {origin} to {dest}: {result_path}")
+        # if result_path[-1] != dest:
+        #     print(f"Path from {origin} to {dest} not found")
+        #     print(f"Path: {result_path}")
+        # else:
+        #     print(f"Path from {origin} to {dest}: {result_path}")
 
         for i in range(len(result_path)-1):
             weight += edges[(result_path[i], result_path[i+1])]
         
-        print(f"Path weight: {weight}\n")
+        # print(f"Path weight: {weight}\n")
         
         path_weights.append(weight)
         result_paths.append(result_path)

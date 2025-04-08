@@ -28,14 +28,14 @@ def find_next_node(graph, current, heuristic, visited_list):
     if graph[current] == []:
         return None
     else:
-        print("Current node:", current)
+        # print("Current node:", current)
         for i in graph[current]:
             if i not in visited_list:
                 heapq.heappush(heuristic_value, Node(i, heuristic[(current, i)]))
         
         if not heuristic_value:
             return None
-        print("Heuristic value:", heuristic_value)
+        # print("Heuristic value:", heuristic_value)
         return heapq.heappop(heuristic_value)
 
 def GBFS_search(graph, start, goal, heuristic):
@@ -61,7 +61,7 @@ def GBFS_search(graph, start, goal, heuristic):
         # find next node
         next_node = find_next_node(graph, current_node, heuristic, visited)
         if next_node is None:
-            print("Dead end at node ", current_node)
+            # print("Dead end at node ", current_node)
             return reconstruct_path(path, start, current_node)
         else:
             heapq.heappush(priority_queue, next_node)
@@ -149,7 +149,6 @@ def main():
     
     # Parse the file
     nodes, edges, origin, destinations = parse_graph_file(file_path)
-    print("Nodes:", nodes)
     
     # Create Data Structure    
     G = Network()
@@ -158,25 +157,25 @@ def main():
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
-    print(G.graph)
+    # print(G.graph)
     
     result_paths = []
     path_weights = []
 
     for dest in destinations:
-        print("Starting search from ", origin, " to ", dest)
+        # print("Starting search from ", origin, " to ", dest)
         weight = 0
         result_path = GBFS_search(G.graph, origin, dest, edges)
-        if result_path[-1] != dest:
-            print(f"Path from {origin} to {dest} not found")
-            print(f"Path: {result_path}")
-        else:
-            print(f"Path from {origin} to {dest}: {result_path}")
+        # if result_path[-1] != dest:
+        #     print(f"Path from {origin} to {dest} not found")
+        #     print(f"Path: {result_path}")
+        # else:
+        #     print(f"Path from {origin} to {dest}: {result_path}")
 
         for i in range(len(result_path)-1):
             weight += edges[(result_path[i], result_path[i+1])]
         
-        print(f"Path weight: {weight}\n")
+        # print(f"Path weight: {weight}\n")
         
         path_weights.append(weight)
         result_paths.append(result_path)

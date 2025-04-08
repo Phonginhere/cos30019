@@ -1,5 +1,5 @@
 ASTAR Results Summary
-Total tests: 28
-Successful tests: 20 (71.4%)
-Average execution time: 0.371 seconds
-Average path cost: 12.150
+Total tests: 30
+Successful tests: 30 (100.0%)
+Average execution time: 0.384 seconds
+Average path cost: 13.033

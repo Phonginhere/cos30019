@@ -1,5 +1,5 @@
 BFS Results Summary
-Total tests: 28
-Successful tests: 28 (100.0%)
+Total tests: 30
+Successful tests: 30 (100.0%)
 Average execution time: 0.052 seconds
-Average path cost: 10.429
+Average path cost: 12.233

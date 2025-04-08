@@ -1,5 +1,5 @@
 CUS1 Results Summary
-Total tests: 28
-Successful tests: 28 (100.0%)
+Total tests: 30
+Successful tests: 30 (100.0%)
 Average execution time: 0.051 seconds
-Average path cost: 9.786
+Average path cost: 11.533
