@@ -11,9 +11,9 @@ sys.path.append(os.path.join(current_dir, "..", "data_reader"))
 from parser import parse_graph_file
 
 # Import Network class from custom search directory
-aco_routing_dir = os.path.join(current_dir, '..', "Custom_Search", "aco_routing")
+aco_routing_dir = os.path.join(current_dir, "..", "Custom_Search", "aco_routing")
 sys.path.append(aco_routing_dir)
-
+print(aco_routing_dir)
 from network import Network
 
 class Node:
@@ -36,16 +36,19 @@ def find_f_score(pos, current, goal):
 def find_next_node(graph, pos, current, goal, heuristic, visited_list):
     heuristic_value = []
 
-    for i in graph[current]:
-        if i not in visited_list:
-            g_score = heuristic[(current, i)]
-            f_score = find_f_score(pos, i, goal)
-            heapq.heappush(heuristic_value, Node(i, g_score + f_score, g_score=g_score, f_score=f_score))
-    
-    if not heuristic_value:
+    if graph[current] == []:
         return None
+    else:
+        for i in graph[current]:
+            if i not in visited_list:
+                g_score = heuristic[(current, i)]
+                f_score = find_f_score(pos, i, goal)
+                heapq.heappush(heuristic_value, Node(i, g_score + f_score, g_score=g_score, f_score=f_score))
+    
+        if not heuristic_value:
+            return None
         
-    return heapq.heappop(heuristic_value)
+        return heapq.heappop(heuristic_value)
 
 def a_star(graph, positions, start, goal, heuristic):
     # path dictionary to track the explored paths
@@ -65,6 +68,7 @@ def a_star(graph, positions, start, goal, heuristic):
     while priority_queue:
         current = heapq.heappop(priority_queue)
         current_node = current.start_node
+        print(f"Current node: {current_node} (g: {current.g_score}, f: {current.f_score})")
         
         if current_node == goal:
             return reconstruct_path(path, start, goal)
@@ -75,27 +79,33 @@ def a_star(graph, positions, start, goal, heuristic):
         visited.add(current_node)
 
         # Explore neighbors
-        for neighbor in graph[current_node]:
-            if neighbor in visited:
-                continue
+        if graph[current_node] == []:
+            print("Dead end at node ", current_node)
+            return reconstruct_path(path, start, current_node)
+        else:
+            for neighbor in graph[current_node]:
+                if neighbor in visited:
+                    continue
+                    
+                # Calculate tentative g score
+                tentative_g_score = g_scores[current_node] + heuristic[(current_node, neighbor)]
                 
-            # Calculate tentative g score
-            tentative_g_score = g_scores[current_node] + heuristic[(current_node, neighbor)]
-            
-            # If this path to neighbor is better than any previous one
-            if neighbor not in g_scores or tentative_g_score < g_scores[neighbor]:
-                # Update path
-                path[neighbor] = current_node
-                g_scores[neighbor] = tentative_g_score
-                f_scores[neighbor] = tentative_g_score + find_f_score(positions, neighbor, goal)
-                
-                # Add to priority queue
-                heapq.heappush(priority_queue, Node(
-                    neighbor, 
-                    g_scores[neighbor] + f_scores[neighbor],
-                    g_scores[neighbor],
-                    f_scores[neighbor]
-                ))
+                # If this path to neighbor is better than any previous one
+                if neighbor not in g_scores or tentative_g_score < g_scores[neighbor]:
+                    # Update path
+                    path[neighbor] = current_node
+                    g_scores[neighbor] = tentative_g_score
+                    f_scores[neighbor] = tentative_g_score + find_f_score(positions, neighbor, goal)
+                    
+                    # Add to priority queue
+                    heapq.heappush(priority_queue, Node(
+                        neighbor, 
+                        g_scores[neighbor] + f_scores[neighbor],
+                        g_scores[neighbor],
+                        f_scores[neighbor]
+                    ))
+        
+        print("Path:", path)
     
     # No path found
     return None
@@ -109,6 +119,7 @@ def reconstruct_path(path, start, goal):
         current = path.get(current)
     
     result_path.reverse()
+    print("Reconstructed path:", result_path)
     return result_path
 
 def visualise(paths, pos, edges):
@@ -168,14 +179,14 @@ def visualise(paths, pos, edges):
     plt.show()
 
 # Example graph for testing
-graph = {
-    '1': ['3','4'],
-    '2': ['1','3'],
-    '3': ['1','2','5','6'],
-    '4': ['1','3','5'],
-    '5': ['3','4'],
-    '6': ['3']
-}
+# graph = {
+#     '1': ['3','4'],
+#     '2': ['1','3'],
+#     '3': ['1','2','5','6'],
+#     '4': ['1','3','5'],
+#     '5': ['3','4'],
+#     '6': ['3']
+# }
 
 def main():
     # Check if file path is provided as command line argument
@@ -183,7 +194,7 @@ def main():
         file_path = sys.argv[1]
     else:
         # Default file for testing
-        file_path = os.path.join("..", "Data", "Modified_TSP", "test_27.txt")
+        file_path = os.path.join("Data", "Modified_TSP", "test_27.txt")
     
     # Parse the file
     nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -195,19 +206,29 @@ def main():
     # Add edges 
     for (start, end), weight in edges.items():
         G.add_edge(start, end, cost=float(weight))
+    print(G.graph)
     
     result_paths = []
-    for dest in destinations:
-        result_path = a_star(G.graph, nodes, origin, dest, edges)
-        result_paths.append(result_path)
-
     path_weights = []
-    
-    for path in result_paths:
+
+    for dest in destinations:
+        print("Starting search from ", origin, " to ", dest)
         weight = 0
-        for i in range(len(path)-1):
-            weight += edges[(path[i], path[i+1])]
+        result_path = a_star(G.graph, nodes, origin, dest, edges)
+
+        if result_path[-1] != dest:
+            print(f"Path from {origin} to {dest} not found")
+            print(f"Path: {result_path}")
+        else:
+            print(f"Path from {origin} to {dest}: {result_path}")
+
+        for i in range(len(result_path)-1):
+            weight += edges[(result_path[i], result_path[i+1])]
+        
+        print(f"Path weight: {weight}\n")
+        
         path_weights.append(weight)
+        result_paths.append(result_path)
     
     # Pick the shortest path
     min_weight = min(path_weights)
