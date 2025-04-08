@@ -1,5 +1,5 @@
 GBFS Results Summary
 Total tests: 30
-Successful tests: 30 (100.0%)
-Average execution time: 0.399 seconds
-Average path cost: 104.633
+Successful tests: 23 (76.7%)
+Average execution time: 0.360 seconds
+Average path cost: 22.565

@@ -189,7 +189,7 @@ def main():
         file_path = sys.argv[1]
     else:
         # Default file for testing
-        file_path = os.path.join("Data", "Modified_TSP", "test_27.txt")
+        file_path = os.path.join("Data", "Modified_TSP", "test_13.txt")
     
     # Parse the file
     nodes, edges, origin, destinations = parse_graph_file(file_path)
@@ -209,12 +209,13 @@ def main():
         # print("Starting search from ", origin, " to ", dest)
         weight = 0
         result_path = a_star(G.graph, nodes, origin, dest, edges)
-
-        # if result_path[-1] != dest:
-        #     print(f"Path from {origin} to {dest} not found")
-        #     print(f"Path: {result_path}")
+        
+        if result_path[-1] != dest:
+            # print(f"Path from {origin} to {dest} not found")
+            # print(f"Path: {result_path}")
+            continue
         # else:
-        #     print(f"Path from {origin} to {dest}: {result_path}")
+            # print(f"Path from {origin} to {dest}: {result_path}")
 
         for i in range(len(result_path)-1):
             weight += edges[(result_path[i], result_path[i+1])]
@@ -224,15 +225,17 @@ def main():
         path_weights.append(weight)
         result_paths.append(result_path)
     
-    # Pick the shortest path
-    min_weight = min(path_weights)
-    min_index = path_weights.index(min_weight)
-    
-    # Print the results
-    print(f"{file_path} AS")
-    print(f"{destinations} {len(nodes)}")
-    print(f"{result_paths[min_index]}")
-    print(f"{min_weight}")
+    if len(result_paths) == 0:
+        print("No path found")
+    else:
+        # Pick the shortest path
+        min_weight = min(path_weights)
+        min_index = path_weights.index(min_weight)
+        # Print the results
+        print(f"{file_path} AS")
+        print(f"{destinations} {len(nodes)}")
+        print(f"{result_paths[min_index]}")
+        print(f"{min_weight}")
     
     # Optionally visualize
     # visualise(result_paths, nodes, edges)

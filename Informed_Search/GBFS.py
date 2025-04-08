@@ -166,9 +166,10 @@ def main():
         # print("Starting search from ", origin, " to ", dest)
         weight = 0
         result_path = GBFS_search(G.graph, origin, dest, edges)
-        # if result_path[-1] != dest:
+        if result_path[-1] != dest:
         #     print(f"Path from {origin} to {dest} not found")
         #     print(f"Path: {result_path}")
+            continue
         # else:
         #     print(f"Path from {origin} to {dest}: {result_path}")
 
@@ -180,15 +181,18 @@ def main():
         path_weights.append(weight)
         result_paths.append(result_path)
     
-    # Pick the shortest path
-    min_weight = min(path_weights)
-    min_index = path_weights.index(min_weight)
-    
-    # Print the results
-    print(f"{file_path} GBFS")
-    print(f"{destinations} {len(nodes)}")
-    print(f"{result_paths[min_index]}")
-    print(f"{min_weight}")
+    if not result_paths:
+        print("No paths found")
+    else:
+        # Pick the shortest path
+        min_weight = min(path_weights)
+        min_index = path_weights.index(min_weight)
+        
+        # Print the results
+        print(f"{file_path} GBFS")
+        print(f"{destinations} {len(nodes)}")
+        print(f"{result_paths[min_index]}")
+        print(f"{min_weight}")
     
     # Optionally visualize
     # visualise(result_paths, nodes, edges)

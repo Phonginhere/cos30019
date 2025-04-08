@@ -179,7 +179,7 @@ class ACO:
             
             # Visualization update
             if self.visualize and (iteration % self.visualization_step == 0):
-                self.visualizer.update_state(iteration + 1, self.best_path, self.best_path_cost)
+                self.visualizer.update_state(iteration + 1, self.best_path, self.best_path_cost)    
 
     def find_shortest_path(
         self,
