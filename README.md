@@ -201,9 +201,11 @@ For advanced usage, you can modify the parameters in the `aco_search.py` file:
 ```python
 # Key parameters to adjust
 ant_max_steps = node_count + 1  # Maximum steps an ant can take
-iterations = 2000               # Number of algorithm iterations
+iterations = 500               # Number of algorithm iterations
 """
-I suggest that the iterations can be set from range 300-2000 depend on the complexity of problem and how well solution you want. For TSP ~~ 50 nodes, normally the Algorithm will convergence from iteration 300-500 and start to micro adjust from 500-2000.
+I suggest that the iterations can be set from range 300-2000 for TSP depend on the complexity of problem and how well solution you want. For TSP ~~ 50 nodes, normally the Algorithm will convergence from iteration 300-500 and start to micro adjust from 500-2000.
+
+For Shortest Path Problem, my recommend is from 50-100 or even 20 if the nodes are too high.
 """
 num_ants = node_count           # Number of ants to deploy
 alpha = 1                       # Pheromone influence factor
