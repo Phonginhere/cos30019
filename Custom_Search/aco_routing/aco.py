@@ -4,6 +4,8 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import time
+import multiprocessing
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Import paths setup
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +32,10 @@ class ACO:
         log_step: int = None,
         visualize: bool = False,
         visualization_step: int = 1,
-        use_floyd_warshall: bool = False  # New parameter for Floyd-Warshall preprocessing
+        use_floyd_warshall: bool = False,  # New parameter for Floyd-Warshall preprocessing
+        use_local_search: bool = True,     # Enable local search optimization
+        local_search_frequency: int = 5,   # Apply local search every N iterations
+        num_threads: int = None            # Number of threads for parallel processing
     ):
         """Initialize the ACO (Ant Colony Optimization) algorithm.
         
@@ -47,6 +52,9 @@ class ACO:
             visualize: Whether to visualize the algorithm progress
             visualization_step: Frequency of visualization updates
             use_floyd_warshall: Whether to preprocess the graph using Floyd-Warshall algorithm
+            use_local_search: Whether to apply local search optimization
+            local_search_frequency: Apply local search every N iterations
+            num_threads: Number of threads to use for parallel processing
         """
         # Store all parameters
         self.graph = graph
@@ -60,7 +68,13 @@ class ACO:
         self.log_step = log_step
         self.visualize = visualize
         self.visualization_step = visualization_step
-        self.use_floyd_warshall = use_floyd_warshall
+        if mode == 0:
+            self.use_floyd_warshall = True # Auto trigger for any destination mode
+        else:
+            self.use_floyd_warshall = use_floyd_warshall
+        self.use_local_search = use_local_search
+        self.local_search_frequency = local_search_frequency
+        self.num_threads = num_threads if num_threads else min(multiprocessing.cpu_count(), 32)
         
         # Initialize other fields
         self.search_ants = []
@@ -107,35 +121,64 @@ class ACO:
         # Update the graph with shortest paths
         fw.update_graph_with_shortest_paths()
         
-        if self.log_step is not None:
-            print(f"Floyd-Warshall preprocessing complete. Graph now has {self.graph.number_of_edges()} edges.")
+        # if self.log_step is not None:
+        #     print(f"Floyd-Warshall preprocessing complete. Graph now has {self.graph.number_of_edges()} edges.")
+            
+    def process_ant(self, ant):
+        """Process a single ant for thread-based parallel execution.
+        
+        Args:
+            ant: The ant to process
+            
+        Returns:
+            Tuple of (ant, best_cost, best_path)
+        """
+        best_cost = float("inf")
+        best_path = None
+        
+        # Process ant until it reaches destination or max steps
+        for _ in range(self.ant_max_steps):
+            if ant.reached_destination():
+                ant.is_fit = True
+                
+                if ant.path_cost == 0:
+                    return (ant, 0, ant.path.copy())
+                
+                best_cost = ant.path_cost
+                best_path = ant.path.copy()
+                break
+                
+            ant.take_step()
+        
+        return (ant, best_cost, best_path)
 
     def _deploy_forward_search_ants(self) -> float:
+        """Process ants using thread-based parallelization for better performance"""
         iteration_best_path_cost = float("inf")
         
-        for ant in self.search_ants:
+        # Use ThreadPoolExecutor for efficient thread-based parallelization
+        with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
+            # Map requires a function that takes a single parameter, so we need to use a lambda or partial
+            futures = [executor.submit(self.process_ant, ant) for ant in self.search_ants]
             
-            # Process each ant until it reaches destination or max steps
-            for _ in range(self.ant_max_steps):
-                if ant.reached_destination():
-                    ant.is_fit = True
-                    
-                    if ant.path_cost == 0:
-                        self.best_path_cost = 0
-                        return 0
-                    
-                    if ant.path_cost <= self.best_path_cost:
-                        self.best_path = ant.path.copy()
-                        self.best_path_cost = ant.path_cost
+            for future in as_completed(futures):
+                try:
+                    ant, path_cost, path = future.result()
+                    if path is not None and path_cost < float("inf"):
+                        if path_cost == 0:
+                            self.best_path_cost = 0
+                            self.best_path = path
+                            return 0
                         
-                    if ant.path_cost <= iteration_best_path_cost:
-                        iteration_best_path_cost = ant.path_cost
-                        
-                    break
-                    
-                ant.take_step()
+                        if path_cost <= self.best_path_cost:
+                            self.best_path = path
+                            self.best_path_cost = path_cost
+                            
+                        if path_cost <= iteration_best_path_cost:
+                            iteration_best_path_cost = path_cost
+                except Exception as e:
+                    print(f"Error processing ant: {e}")
         
-        # Return ant positions for visualization
         return iteration_best_path_cost
             
     def _deploy_backward_search_ants(self, iteration, iteration_best_path_cost) -> (float, float):
@@ -197,6 +240,10 @@ class ACO:
             
             # Update pheromones after each iteration
             self.acc, self.d_acc = self.graph_api.update_pheromones(max_pheromon, min_pheromon, self.acc, self.d_acc)
+            
+            # Apply local search optimization if enabled
+            if self.use_local_search and (iteration + 1) % self.local_search_frequency == 0:
+                self.best_path, self.best_path_cost = self._apply_2opt_local_search(self.best_path)
             
             # Logging 
             if self.log_step is not None and ((iteration + 1) % self.log_step == 0):
@@ -264,3 +311,62 @@ class ACO:
 
             
         return self.best_path, self.best_path_cost
+    
+    def _apply_2opt_local_search(self, path):
+        """Applies 2-opt local search to improve a path.
+        
+        The 2-opt algorithm swaps two edges in the path to create a new path
+        and keeps the changes if they improve the solution.
+        
+        Args:
+            path: The current path to optimize
+            
+        Returns:
+            Tuple of (improved_path, improved_cost)
+        """
+        if len(path) < 4:  # Not enough nodes for meaningful swaps
+            return path, self._calculate_path_cost(path)
+        
+        improved = True
+        best_path = path.copy()
+        best_cost = self._calculate_path_cost(best_path)
+        
+        # Continue until no improvement can be made
+        while improved:
+            improved = False
+            for i in range(1, len(best_path) - 2):
+                for j in range(i + 1, len(best_path) - 1):
+                    # Skip if nodes are adjacent
+                    if j == i + 1:
+                        continue
+                    
+                    # Create new path with 2-opt swap: reverse the segment between i and j
+                    new_path = best_path[:i] + best_path[i:j+1][::-1] + best_path[j+1:]
+                    new_cost = self._calculate_path_cost(new_path)
+                    
+                    # Update if we found a better path
+                    if new_cost < best_cost:
+                        best_path = new_path
+                        best_cost = new_cost
+                        improved = True
+                        break  # Start the nested loops again with the new path
+                
+                if improved:
+                    break  # break out of outer loop if improved
+        
+        return best_path, best_cost
+    
+    def _calculate_path_cost(self, path):
+        """Calculate the total cost of a path.
+        
+        Args:
+            path: List of nodes representing a path
+            
+        Returns:
+            The total cost of the path
+        """
+        cost = 0.0
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i + 1]
+            cost += self.graph_api.get_edge_cost(u, v)
+        return cost
