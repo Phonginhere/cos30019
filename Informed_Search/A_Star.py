@@ -211,11 +211,9 @@ def main():
         result_path = a_star(G.graph, nodes, origin, dest, edges)
         
         if result_path[-1] != dest:
-            # print(f"Path from {origin} to {dest} not found")
-            # print(f"Path: {result_path}")
-            continue
-        # else:
-            # print(f"Path from {origin} to {dest}: {result_path}")
+            print("No path found")
+        else:
+            print(result_path)
 
         for i in range(len(result_path)-1):
             weight += edges[(result_path[i], result_path[i+1])]
@@ -225,17 +223,14 @@ def main():
         path_weights.append(weight)
         result_paths.append(result_path)
     
-    if len(result_paths) == 0:
-        print("No path found")
-    else:
-        # Pick the shortest path
-        min_weight = min(path_weights)
-        min_index = path_weights.index(min_weight)
-        # Print the results
-        print(f"{file_path} AS")
-        print(f"{destinations} {len(nodes)}")
-        print(f"{result_paths[min_index]}")
-        print(f"{min_weight}")
+    # Pick the shortest path
+    min_weight = min(path_weights)
+    min_index = path_weights.index(min_weight)
+    # Print the results
+    print(f"{file_path} AS")
+    print(f"{destinations} {len(nodes)}")
+    print(f"{result_paths[min_index]}")
+    print(f"{min_weight}")
     
     # Optionally visualize
     # visualise(result_paths, nodes, edges)
