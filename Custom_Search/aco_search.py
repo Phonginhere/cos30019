@@ -116,14 +116,14 @@ def main():
     else:
         # Normal output
         aco_path = [node for node in aco_path]
-        goal_str = f"[{', '.join(destinations)}]"  # Format destinations consistently
+        goal_str = aco_path[-1]
         number_of_nodes = G.number_of_nodes()
-        path_str = " ".join(aco_path)
+        path_str = ", ".join(aco_path)
         
         print(f"{file_path} CUS2")
         print(f"{goal_str} {number_of_nodes}")
-        print(f"{path_str}")
-        print(f"{aco_cost}")
+        print(f"[{path_str}]")
+        # print(f"{aco_cost}")
         
         # Only visualize final result if not already visualized during execution
         # if not visualize:
