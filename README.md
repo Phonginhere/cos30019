@@ -35,7 +35,7 @@ This repository contains the implementation of various search algorithms for pat
    - Uses heuristics to guide search
    - Fast but not guaranteed to find optimal paths
 
-2. **AS (A* Search)** - Implemented by Tuan
+2. **AS (A\* Search)** - Implemented by Tuan
    - Combines cost-so-far and heuristics
    - Complete and optimal with admissible heuristics
 
