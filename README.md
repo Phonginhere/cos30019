@@ -67,7 +67,7 @@ COS30019_IntroAI/
 │   ├── bfs.py
 │   └── dfs.py
 ├── Informed_Search/        # A* and GBFS implementations
-│   ├── astar.py
+│   ├── A_Star.py
 │   └── GBFS.py
 ├── Custom_Search/          # Custom search algorithms
 │   ├── aco_search.py       # ACO main script
@@ -79,7 +79,7 @@ COS30019_IntroAI/
 │       ├── ant.py          # Ant agent implementation
 │       └── ...             # Supporting modules
 └── Tests/                  # Testing infrastructure
-    ├── run_aco_test.py     # Script to run tests on all algorithms
+    ├── run_test.py     # Script to run tests on all algorithms
     ├── visualize_results.py # Visualization of test results
     ├── Results/            # Test results in text format
     └── Visualizations/     # Generated visualizations
@@ -137,7 +137,7 @@ python search.py Data/Modified_TSP/test_5.txt BFS
 The project includes a testing framework to evaluate all algorithms on multiple test cases. To run tests:
 
 ```bash
-# Run tests on all algorithms (BFS, DFS, CUS1, CUS2)
+# Run tests on all algorithms (BFS, DFS, GBFS, AS, CUS1, CUS2)
 python Tests/run_test.py
 ```
 
@@ -213,6 +213,13 @@ beta = 2                        # Heuristic influence factor
 evaporation_rate = 0.5          # Learning rate, the smaller evaporation_rate the bigger pheromone update (1/evaporation_rate)
 ```
 
+Combination with others algorithm to enhance the quality
+``` python
+use_search_local = True # Using 2opt
+local_search_frequency = 10 # Frequency of using local search
+use_floyd_warshall = True # Using floyd warshall to refine the graph before using ACO. This will automatically enable when using with mode 0 (avoiding no result found due to dead-end path)
+```
+
 ### Visualization Controls
 
 The ACO visualization shows:
@@ -229,6 +236,7 @@ aco = ACO(
     # ... other parameters ...
     visualize=True,              # Enable/disable visualization
     visualization_step=10        # Update frequency (iterations)
+    logging = 10 # Change to None to disable logging on terminal
 )
 ```
 ## Contributors
